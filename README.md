@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # AI-Powered Smart Tourism and Travel Recommendation System
 
 A fully-featured, production-ready travel planning and tourism management platform built with **Python & Streamlit**. The platform serves as a unified, single-window assistant that enables travelers to discover destinations (from major metro hubs to remote rural villages), generate customized day-by-day itineraries, compare multi-modal transport options, book hotels and activities, optimize budgets automatically, and manage trips and digital boarding passes.
@@ -206,3 +207,6 @@ To test the specific scenario described in Section 39:
 - In the absence of third-party API credentials, the platform seamlessly operates in **Verified Demo Mode**.
 - User passwords are encrypted using PBKDF2 with SHA-256 HMAC and salt.
 - Credit card and banking credentials are never stored in plain text.
+=======
+# AI-Assited-coding
+>>>>>>> 2af728a26cd19da7afd26163718c7c3c9cd99365
