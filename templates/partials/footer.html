@@ -1,0 +1,84 @@
+<footer class="bg-slate-900 text-slate-300 pt-16 pb-8 border-t border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+            
+            <!-- Col 1: About -->
+            <div class="space-y-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-teal-500 rounded-xl flex items-center justify-center text-white shadow-md">
+                        <i class="fa-solid fa-compass text-xl"></i>
+                    </div>
+                    <span class="text-xl font-bold text-white">AI Smart Tourism</span>
+                </div>
+                <p class="text-sm text-slate-400 leading-relaxed">
+                    “Your Journey. Your Interests. Your AI-Powered Trip.”
+                </p>
+                <p class="text-xs text-slate-500">
+                    Next-generation intelligent tourism engine with live weather recalculation, conversational AI, and secure unified booking.
+                </p>
+                <div class="flex space-x-3 pt-2">
+                    <a href="#" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-teal-600 flex items-center justify-center text-slate-400 hover:text-white transition"><i class="fa-brands fa-x-twitter"></i></a>
+                    <a href="#" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-teal-600 flex items-center justify-center text-slate-400 hover:text-white transition"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-teal-600 flex items-center justify-center text-slate-400 hover:text-white transition"><i class="fa-brands fa-linkedin-in"></i></a>
+                </div>
+            </div>
+
+            <!-- Col 2: Quick Links -->
+            <div>
+                <h4 class="text-white text-sm font-semibold uppercase tracking-wider mb-4">Discover</h4>
+                <ul class="space-y-2.5 text-sm">
+                    <li><a href="{% url 'destination_list' %}" class="hover:text-teal-400 transition">Popular Destinations</a></li>
+                    <li><a href="{% url 'plan_trip' %}" class="hover:text-teal-400 transition">Smart AI Planner</a></li>
+                    <li><a href="{% url 'weather_dashboard' %}" class="hover:text-teal-400 transition">Live Weather & Radar</a></li>
+                    <li><a href="{% url 'hotel_list' %}" class="hover:text-teal-400 transition">Boutique & Luxury Stays</a></li>
+                    <li><a href="{% url 'transport_list' %}" class="hover:text-teal-400 transition">Transit & Cab Rentals</a></li>
+                </ul>
+            </div>
+
+            <!-- Col 3: Partners & Providers -->
+            <div>
+                <h4 class="text-white text-sm font-semibold uppercase tracking-wider mb-4">For Partners</h4>
+                <ul class="space-y-2.5 text-sm">
+                    <li><a href="{% url 'provider_register' %}" class="hover:text-teal-400 transition">Become a Service Provider</a></li>
+                    <li><a href="{% url 'login' %}" class="hover:text-teal-400 transition">Provider Portal Login</a></li>
+                    <li><span class="text-slate-500 text-xs">Hotelier & Fleet Partner Support</span></li>
+                    <li><span class="text-slate-500 text-xs">Verified Safe Payment Disbursals</span></li>
+                </ul>
+            </div>
+
+            <!-- Col 4: Platform Security & Status -->
+            <div>
+                <h4 class="text-white text-sm font-semibold uppercase tracking-wider mb-4">Security & Tech</h4>
+                <div class="space-y-3 text-xs text-slate-400">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-lock text-emerald-400"></i>
+                        <span>256-Bit SSL & Django ORM Security</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-shield-halved text-teal-400"></i>
+                        <span>Razorpay Test Sandbox Enabled</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-microchip text-indigo-400"></i>
+                        <span>Google Gemini Generative AI Model</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-cloud text-sky-400"></i>
+                        <span>OpenWeather Live Satellite Feed</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="pt-8 mt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center text-xs text-slate-500">
+            <p>&copy; 2026 AI Smart Travel & Tourism System. All rights reserved.</p>
+            <div class="flex space-x-6 mt-4 md:mt-0">
+                <a href="#" class="hover:text-slate-400">Privacy Policy</a>
+                <a href="#" class="hover:text-slate-400">Terms of Service</a>
+                <a href="#" class="hover:text-slate-400">Cancellation Rules</a>
+                <a href="#" class="hover:text-slate-400">API Demo Notice</a>
+            </div>
+        </div>
+    </div>
+</footer>

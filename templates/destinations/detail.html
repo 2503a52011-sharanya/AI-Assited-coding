@@ -1,0 +1,297 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ dest.name }} — Tourist Attractions & Live Weather{% endblock %}
+
+{% block content %}
+<!-- Destination Hero Cover -->
+<section class="relative h-[420px] bg-slate-900 text-white overflow-hidden">
+    <img src="{{ dest.cover_image }}" alt="{{ dest.name }}" class="w-full h-full object-cover opacity-40">
+    <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
+    
+    <div class="absolute bottom-10 left-0 right-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+            <div>
+                <span class="bg-teal-500/20 text-teal-300 border border-teal-500/40 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider backdrop-blur-md">
+                    {{ dest.state_country }}
+                </span>
+                <h1 class="text-4xl sm:text-5xl font-extrabold text-white mt-2">{{ dest.name }}</h1>
+                <p class="text-base text-slate-300 font-medium mt-1">{{ dest.tagline }}</p>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <a href="{% url 'plan_trip' %}?dest={{ dest.id }}" class="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm rounded-2xl shadow-lg shadow-teal-600/30 transition flex items-center">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Plan Trip with AI
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Content Container -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    
+    <!-- Top Summary Grid (About + Weather Widget) -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
+        
+        <!-- About Overview -->
+        <div class="lg:col-span-2 bg-white rounded-3xl p-8 border border-gray-100 shadow-sm space-y-6">
+            <div>
+                <h2 class="text-2xl font-bold text-slate-900">About Destination</h2>
+                <p class="text-slate-600 text-sm leading-relaxed mt-3">{{ dest.description }}</p>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 border-t border-gray-100 text-xs">
+                <div class="p-4 bg-slate-50 rounded-2xl">
+                    <span class="text-slate-400 block font-semibold">Best Time to Visit</span>
+                    <span class="text-slate-800 font-bold text-sm mt-0.5 block">{{ dest.best_time_to_visit }}</span>
+                </div>
+                <div class="p-4 bg-slate-50 rounded-2xl">
+                    <span class="text-slate-400 block font-semibold">Estimated Daily Cost</span>
+                    <span class="text-teal-700 font-bold text-sm mt-0.5 block">₹{{ dest.average_budget_per_day }}</span>
+                </div>
+                <div class="p-4 bg-slate-50 rounded-2xl col-span-2 sm:col-span-1">
+                    <span class="text-slate-400 block font-semibold">Total Verified Sights</span>
+                    <span class="text-slate-800 font-bold text-sm mt-0.5 block">{{ attractions.count }} Points of Interest</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-Time Weather Widget -->
+        <div class="bg-gradient-to-br from-slate-900 to-teal-950 text-white rounded-3xl p-8 shadow-xl flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-xs uppercase font-bold text-teal-300 tracking-wider">Climate Observation</span>
+                    <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full {% if weather.is_live %}bg-emerald-500/30 text-emerald-300{% else %}bg-sky-500/30 text-sky-300{% endif %}">
+                        {% if weather.is_live %}Live Satellite{% else %}Demo Radar{% endif %}
+                    </span>
+                </div>
+
+                <div class="flex items-baseline space-x-3 mb-2">
+                    <span class="text-5xl font-extrabold text-white">{{ weather.current.temperature }}</span>
+                    <span class="text-sm text-teal-200">{{ weather.current.condition }}</span>
+                </div>
+                <p class="text-xs text-slate-300">{{ weather.current.description }}</p>
+
+                <!-- Weather metrics -->
+                <div class="grid grid-cols-3 gap-2 mt-6 pt-4 border-t border-white/10 text-center text-xs">
+                    <div>
+                        <span class="text-slate-400 block">Rain Prob</span>
+                        <span class="font-bold text-teal-300 text-sm">{{ weather.current.rain_prob }}%</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block">Humidity</span>
+                        <span class="font-bold text-teal-300 text-sm">{{ weather.current.humidity }}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block">Wind</span>
+                        <span class="font-bold text-teal-300 text-sm">{{ weather.current.wind_speed }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-white/10 text-[11px] text-slate-400 flex items-center justify-between">
+                <span>{{ weather.source_label }}</span>
+                <a href="{% url 'weather_dashboard' %}?city={{ dest.name }}" class="text-teal-400 font-bold hover:underline">Full Forecast &rarr;</a>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Interactive Leaflet Map of Attractions -->
+    <div class="mb-16">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h2 class="text-2xl font-bold text-slate-900">Interactive Attractions Map</h2>
+                <p class="text-xs text-slate-500">Explore GPS-located points of interest, entry fees, and indoor/outdoor weather suitability</p>
+            </div>
+        </div>
+
+        <div id="destMap" class="w-full h-[450px] rounded-3xl shadow-sm border border-gray-200"></div>
+    </div>
+
+    <!-- Attractions Showcase Cards -->
+    <div class="mb-16">
+        <h2 class="text-2xl font-bold text-slate-900 mb-6">Places You Will Visit in {{ dest.name }}</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for a in attractions %}
+            <div class="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition flex flex-col">
+                <div class="relative h-48">
+                    <img src="{{ a.image_url }}" alt="{{ a.name }}" class="w-full h-full object-cover">
+                    <div class="absolute top-3 left-3">
+                        <span class="bg-white/90 backdrop-blur-md text-xs font-bold text-slate-800 px-2.5 py-1 rounded-full shadow-sm">
+                            {{ a.get_category_display }}
+                        </span>
+                    </div>
+                    <div class="absolute top-3 right-3">
+                        {% if a.is_indoor %}
+                            <span class="bg-emerald-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm flex items-center">
+                                <i class="fa-solid fa-umbrella mr-1"></i> Rain-Friendly / Indoor
+                            </span>
+                        {% else %}
+                            <span class="bg-amber-500 text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm flex items-center">
+                                <i class="fa-solid fa-sun mr-1"></i> Outdoor Sight
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="p-6 flex-1 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <h3 class="font-bold text-slate-900 text-lg">{{ a.name }}</h3>
+                            <span class="text-xs font-bold text-amber-500"><i class="fa-solid fa-star"></i> {{ a.rating }}</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mb-3 leading-relaxed">{{ a.description }}</p>
+                    </div>
+
+                    <div class="pt-4 border-t border-gray-100 text-xs text-slate-500 space-y-1.5">
+                        <div class="flex justify-between">
+                            <span>Entry Fee:</span>
+                            <span class="font-bold text-slate-900">{% if a.entry_fee > 0 %}₹{{ a.entry_fee }}{% else %}Free Admission{% endif %}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Recommended Duration:</span>
+                            <span class="font-semibold text-slate-800">{{ a.typical_time_spent_hours }} hours</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Hours:</span>
+                            <span class="font-semibold text-slate-800">{{ a.opening_time|default:"09:00" }} - {{ a.closing_time|default:"18:00" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Available In-Platform Hotels & Activities -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
+        <!-- Hotels -->
+        <div class="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900">Recommended Hotels</h3>
+                    <p class="text-xs text-slate-500">Verified stays near {{ dest.name }} attractions</p>
+                </div>
+                <a href="{% url 'hotel_list' %}?destination={{ dest.id }}" class="text-xs font-bold text-teal-600 hover:underline">View All &rarr;</a>
+            </div>
+            
+            <div class="space-y-4">
+                {% for h in hotels %}
+                <div class="flex items-center space-x-4 p-3 rounded-2xl hover:bg-slate-50 transition border border-gray-50">
+                    <img src="{{ h.cover_image }}" class="w-16 h-16 rounded-xl object-cover" alt="{{ h.name }}">
+                    <div class="flex-1">
+                        <h4 class="font-bold text-sm text-slate-900">{{ h.name }}</h4>
+                        <p class="text-xs text-slate-500 truncate">{{ h.address }}</p>
+                        <span class="text-xs font-extrabold text-teal-700">₹{{ h.base_price }}/night</span>
+                    </div>
+                    <a href="{% url 'hotel_detail' hotel_id=h.id %}" class="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold transition">Book</a>
+                </div>
+                {% empty %}
+                <p class="text-xs text-slate-400">Hotels being populated.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Activities -->
+        <div class="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900">Guided Tours & Experiences</h3>
+                    <p class="text-xs text-slate-500">Book activities without leaving platform</p>
+                </div>
+                <a href="{% url 'activity_list' %}?destination={{ dest.id }}" class="text-xs font-bold text-teal-600 hover:underline">View All &rarr;</a>
+            </div>
+
+            <div class="space-y-4">
+                {% for act in activities %}
+                <div class="flex items-center space-x-4 p-3 rounded-2xl hover:bg-slate-50 transition border border-gray-50">
+                    <img src="{{ act.image_url }}" class="w-16 h-16 rounded-xl object-cover" alt="{{ act.title }}">
+                    <div class="flex-1">
+                        <h4 class="font-bold text-sm text-slate-900">{{ act.title }}</h4>
+                        <p class="text-xs text-slate-500">{{ act.duration_hours }}h • {{ act.time_slot }}</p>
+                        <span class="text-xs font-extrabold text-teal-700">₹{{ act.price_per_person }}/ticket</span>
+                    </div>
+                    <a href="{% url 'activity_list' %}?destination={{ dest.id }}" class="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold transition">Book</a>
+                </div>
+                {% empty %}
+                <p class="text-xs text-slate-400">Activities being populated.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Traveler Reviews -->
+    <div class="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-slate-900">Traveler Feedback</h3>
+            {% if user.is_authenticated %}
+                <span class="text-xs text-teal-600 font-semibold">Verified Traveler Review</span>
+            {% endif %}
+        </div>
+
+        {% if user.is_authenticated %}
+        <form method="POST" action="{% url 'add_review' destination_id=dest.id %}" class="mb-8 p-4 bg-slate-50 rounded-2xl space-y-3">
+            {% csrf_token %}
+            <div class="flex items-center space-x-4">
+                <label class="text-xs font-bold text-gray-700">Rating:</label>
+                <select name="rating" class="px-3 py-1 bg-white border border-gray-200 rounded-lg text-xs font-semibold">
+                    <option value="5">⭐⭐⭐⭐⭐ 5 Stars</option>
+                    <option value="4">⭐⭐⭐⭐ 4 Stars</option>
+                    <option value="3">⭐⭐⭐ 3 Stars</option>
+                </select>
+            </div>
+            <textarea name="comment" rows="2" placeholder="Share your experience at {{ dest.name }}..." class="w-full p-3 bg-white border border-gray-200 rounded-xl text-xs focus:border-teal-500 outline-none" required></textarea>
+            <div class="text-right">
+                <button type="submit" class="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-xl transition">Submit Review</button>
+            </div>
+        </form>
+        {% endif %}
+
+        <div class="space-y-4">
+            {% for r in reviews %}
+            <div class="p-4 bg-gray-50/70 rounded-2xl text-xs space-y-1">
+                <div class="flex items-center justify-between">
+                    <span class="font-bold text-slate-900">{{ r.user.get_full_name|default:r.user.username }}</span>
+                    <span class="text-amber-500">★ {{ r.rating }}/5</span>
+                </div>
+                <p class="text-slate-600">{{ r.comment }}</p>
+                <span class="text-[10px] text-slate-400 block pt-1">{{ r.created_at|date:"M d, Y" }}</span>
+            </div>
+            {% empty %}
+            <p class="text-xs text-slate-400">No reviews yet. Be the first explorer to review!</p>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const destLat = {{ dest.latitude }};
+        const destLng = {{ dest.longitude }};
+        
+        const map = L.map('destMap').setView([destLat, destLng], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        const attractions = {{ attraction_points|safe }};
+        attractions.forEach(att => {
+            const marker = L.marker([att.lat, att.lng]).addTo(map);
+            marker.bindPopup(`
+                <div class="p-1">
+                    <h4 class="font-bold text-sm text-slate-900">${att.name}</h4>
+                    <span class="text-[10px] uppercase font-semibold text-teal-700">${att.category}</span>
+                    <p class="text-xs text-gray-600 mt-1">${att.desc}</p>
+                    <div class="mt-2 text-xs font-bold text-slate-800">Fee: ${att.fee}</div>
+                </div>
+            `);
+        });
+    });
+</script>
+{% endblock %}

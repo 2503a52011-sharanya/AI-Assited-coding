@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% block title %}Smart AI Trip Planner — AI Smart Tourism{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 sm:p-12">
+        
+        <!-- Header -->
+        <div class="text-center max-w-xl mx-auto mb-10">
+            <div class="w-14 h-14 bg-gradient-to-tr from-teal-600 to-emerald-500 rounded-2xl flex items-center justify-center text-white text-2xl mx-auto shadow-lg shadow-teal-500/20 mb-3">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+            </div>
+            <h1 class="text-3xl font-extrabold text-slate-900">Smart AI Trip Planner</h1>
+            <p class="text-xs sm:text-sm text-slate-500 mt-2">
+                Provide your travel preferences, and our generative intelligence will craft an optimized day-wise schedule with integrated satellite weather checks.
+            </p>
+        </div>
+
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- Destination & Starting Point -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Starting Location *</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-location-crosshairs absolute left-3.5 top-3.5 text-gray-400 text-sm"></i>
+                        <input type="text" name="starting_location" value="Hyderabad" required placeholder="e.g. Hyderabad, Delhi, Bangalore" class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-teal-500 outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Destination *</label>
+                    <select name="destination" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-teal-500 outline-none">
+                        <option value="">-- Choose Destination --</option>
+                        {% for d in destinations %}
+                            <option value="{{ d.id }}" {% if request.GET.dest|stringformat:"s" == d.id|stringformat:"s" %}selected{% endif %}>
+                                {{ d.name }}, {{ d.state_country }} (Avg ₹{{ d.average_budget_per_day }}/day)
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Dates & Travelers -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Departure Date *</label>
+                    <input type="date" name="start_date" id="startDate" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-teal-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Return Date *</label>
+                    <input type="date" name="end_date" id="endDate" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-teal-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Travelers Count *</label>
+                    <input type="number" name="num_travelers" min="1" max="15" value="2" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-teal-500 outline-none">
+                </div>
+            </div>
+
+            <!-- Budget & Travel Style -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Total Planned Budget (₹ INR) *</label>
+                    <div class="relative">
+                        <span class="absolute left-3.5 top-2.5 text-gray-400 font-bold text-sm">₹</span>
+                        <input type="number" name="total_budget" min="2000" step="500" value="25000" required class="w-full pl-8 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-teal-500 outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Primary Travel Style</label>
+                    <select name="travel_style" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-teal-500 outline-none">
+                        <option value="Family" selected>Family & Kids-Friendly</option>
+                        <option value="Heritage">Heritage & Architecture</option>
+                        <option value="Nature">Nature & Scenic Coastlines</option>
+                        <option value="Adventure">Adventure & Outdoor Trekking</option>
+                        <option value="Relaxation">Relaxation & Wellness</option>
+                        <option value="Romantic">Romantic Couples Getaway</option>
+                        <option value="Food">Food, Nightlife & Culinary</option>
+                        <option value="Religious">Religious & Spiritual Pilgrimage</option>
+                        <option value="Shopping">Artisan Markets & Shopping</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Preferences (Transit & Accommodation) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Preferred Transportation</label>
+                    <select name="transport_preference" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-teal-500 outline-none">
+                        <option value="Cab / Taxi" selected>Private Cab / Taxi</option>
+                        <option value="AC Bus">AC Sleeper / Tourist Bus</option>
+                        <option value="Tourist Van">Shared Tempo Traveler</option>
+                        <option value="Self Drive">Self-Drive Rental</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Accommodation Preference</label>
+                    <select name="accommodation_preference" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-teal-500 outline-none">
+                        <option value="3-Star / Boutique Hotel" selected>3-Star / Boutique Hotel</option>
+                        <option value="4-Star Luxury Resort">4-Star / 5-Star Luxury Resort</option>
+                        <option value="Budget Guest House">Budget Guest House / Homestay</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Optional Dietary or Accessibility Needs -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Dietary Notes (Optional)</label>
+                    <input type="text" name="dietary_notes" placeholder="e.g. Pure vegetarian, Jain food, Halal" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-teal-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Accessibility Needs (Optional)</label>
+                    <input type="text" name="accessibility_notes" placeholder="e.g. Senior citizen friendly, wheelchair access" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-teal-500 outline-none">
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="pt-4">
+                <button type="submit" class="w-full py-4 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-extrabold text-base rounded-2xl shadow-xl shadow-teal-600/30 transition flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>Generate AI Itinerary</span>
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const startInput = document.getElementById('startDate');
+        const endInput = document.getElementById('endDate');
+        
+        // Auto default departure to tomorrow
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const returnDate = new Date();
+        returnDate.setDate(returnDate.getDate() + 4);
+
+        if (startInput && !startInput.value) {
+            startInput.value = tomorrow.toISOString().split('T')[0];
+            startInput.min = new Date().toISOString().split('T')[0];
+        }
+        if (endInput && !endInput.value) {
+            endInput.value = returnDate.toISOString().split('T')[0];
+        }
+
+        if (startInput && endInput) {
+            startInput.addEventListener('change', () => {
+                endInput.min = startInput.value;
+            });
+        }
+    });
+</script>
+{% endblock %}

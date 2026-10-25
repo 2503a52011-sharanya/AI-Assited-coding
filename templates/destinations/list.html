@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block title %}Explore Destinations — AI Smart Tourism{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    
+    <!-- Title & Search Header -->
+    <div class="mb-10 text-center sm:text-left flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+            <h1 class="text-3xl font-extrabold text-slate-900">Explore Holiday Destinations</h1>
+            <p class="text-sm text-slate-500 mt-1">Discover tourist attractions, cultural wonders, and live climate forecasts.</p>
+        </div>
+
+        <!-- Filter bar -->
+        <form method="GET" class="flex flex-wrap items-center gap-3">
+            <div class="relative">
+                <input type="text" name="q" value="{{ query }}" placeholder="Search by city or state..." class="px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:border-teal-500 outline-none w-52 sm:w-64">
+            </div>
+            <div class="relative">
+                <input type="number" name="budget" value="{{ budget }}" placeholder="Max Daily Budget (₹)" class="px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:border-teal-500 outline-none w-44">
+            </div>
+            <button type="submit" class="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm rounded-xl transition shadow-md shadow-teal-600/20">
+                Filter
+            </button>
+            {% if query or budget %}
+                <a href="{% url 'destination_list' %}" class="px-3 py-2 text-xs font-semibold text-gray-500 hover:text-gray-800">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Destination Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for item in destinations %}
+        <div class="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition border border-gray-100 flex flex-col group">
+            <div class="relative h-60 overflow-hidden">
+                <img src="{{ item.dest.cover_image }}" alt="{{ item.dest.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                <div class="absolute top-4 left-4">
+                    <span class="bg-white/90 backdrop-blur-md text-slate-800 text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                        <i class="fa-solid fa-location-dot text-teal-600 mr-1"></i> {{ item.dest.state_country }}
+                    </span>
+                </div>
+                
+                <!-- Live / Demo Weather Badge -->
+                <div class="absolute top-4 right-4">
+                    <span class="bg-slate-900/80 backdrop-blur-md text-amber-300 text-xs font-bold px-2.5 py-1 rounded-full flex items-center space-x-1 shadow-sm">
+                        <i class="fa-solid fa-cloud-sun text-amber-400"></i>
+                        <span>{{ item.weather.temperature }}</span>
+                    </span>
+                </div>
+
+                <div class="absolute bottom-4 right-4">
+                    <span class="bg-teal-900/90 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-xl">
+                        ₹{{ item.dest.average_budget_per_day }}/day
+                    </span>
+                </div>
+            </div>
+
+            <div class="p-6 flex-1 flex flex-col justify-between">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900 group-hover:text-teal-600 transition">{{ item.dest.name }}</h3>
+                    <p class="text-xs text-teal-700 font-semibold mb-2">{{ item.dest.tagline }}</p>
+                    <p class="text-sm text-slate-600 line-clamp-3 leading-relaxed">{{ item.dest.description }}</p>
+                </div>
+
+                <div class="pt-6 mt-4 border-t border-gray-100 flex items-center justify-between">
+                    <span class="text-xs text-slate-500">
+                        <i class="fa-solid fa-star text-amber-400 mr-1"></i> {{ item.weather.condition }}
+                    </span>
+                    <a href="{% url 'destination_detail' slug=item.dest.slug %}" class="inline-flex items-center text-xs font-bold bg-teal-50 text-teal-700 hover:bg-teal-600 hover:text-white px-4 py-2 rounded-xl transition">
+                        View Details <i class="fa-solid fa-arrow-right ml-1.5"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-3 text-center py-16 bg-white rounded-3xl border border-dashed border-gray-200">
+            <i class="fa-solid fa-map-location text-gray-300 text-5xl mb-3"></i>
+            <h3 class="text-lg font-bold text-gray-700">No destinations found</h3>
+            <p class="text-sm text-gray-400 mt-1">Try adjusting your search criteria or budget.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

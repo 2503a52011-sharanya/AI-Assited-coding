@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}My Trips — AI Smart Tourism{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+        <div>
+            <h1 class="text-3xl font-extrabold text-slate-900">My Saved & Planned Trips</h1>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">Review your AI-generated itineraries, weather advisories, and route maps.</p>
+        </div>
+        <a href="{% url 'plan_trip' %}" class="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-teal-600/20 transition flex items-center self-start sm:self-auto">
+            <i class="fa-solid fa-plus mr-2"></i> Plan New Trip
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {% for trip in trips %}
+        <div class="bg-white rounded-3xl p-6 sm:p-7 border border-gray-100 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-bold text-teal-700 uppercase tracking-wider">{{ trip.destination.name }}</span>
+                    <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full {% if trip.status == 'confirmed' %}bg-emerald-100 text-emerald-800{% else %}bg-amber-100 text-amber-800{% endif %}">
+                        {{ trip.get_status_display }}
+                    </span>
+                </div>
+
+                <h3 class="text-xl font-bold text-slate-900 mb-2">{{ trip.title }}</h3>
+                <p class="text-xs text-slate-500 mb-4">
+                    <i class="fa-regular fa-calendar text-teal-600 mr-1.5"></i> {{ trip.start_date|date:"M d" }} - {{ trip.end_date|date:"M d, Y" }} &bull; {{ trip.num_days }} Days &bull; {{ trip.num_travelers }} Travelers
+                </p>
+
+                <div class="grid grid-cols-2 gap-3 py-3 px-4 bg-slate-50 rounded-2xl text-xs mb-4">
+                    <div>
+                        <span class="text-slate-400 block text-[11px]">Travel Style</span>
+                        <span class="font-bold text-slate-800">{{ trip.travel_style }}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block text-[11px]">Est. Cost / Budget</span>
+                        <span class="font-bold text-teal-700">₹{{ trip.estimated_cost }} / ₹{{ trip.total_budget }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-gray-100 flex items-center justify-between">
+                <a href="{% url 'trip_map' trip_id=trip.id %}" class="text-xs font-bold text-teal-600 hover:text-teal-800 flex items-center">
+                    <i class="fa-solid fa-map-location-dot mr-1.5"></i> View Map
+                </a>
+                <a href="{% url 'trip_itinerary' trip_id=trip.id %}" class="px-4 py-2 bg-teal-50 hover:bg-teal-600 hover:text-white text-teal-700 text-xs font-bold rounded-xl transition">
+                    View Itinerary &rarr;
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-2 text-center py-16 bg-white rounded-3xl border border-dashed border-gray-200">
+            <i class="fa-solid fa-compass text-gray-300 text-5xl mb-3"></i>
+            <h3 class="text-lg font-bold text-gray-700">No Trips Planned Yet</h3>
+            <p class="text-xs text-gray-400 mt-1 max-w-sm mx-auto mb-6">Let our AI build you a personalized vacation itinerary with live weather protection.</p>
+            <a href="{% url 'plan_trip' %}" class="px-6 py-2.5 bg-teal-600 text-white rounded-xl text-xs font-bold">Start Planning</a>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

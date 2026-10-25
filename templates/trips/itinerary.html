@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ trip.title }} — Day-wise AI Itinerary{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+    <!-- Trip Header Card -->
+    <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm mb-8 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+        <div>
+            <div class="flex items-center space-x-2 text-xs font-bold text-teal-600 uppercase tracking-wider mb-1">
+                <span>{{ trip.num_days }} Days &bull; {{ trip.num_travelers }} Traveler(s) &bull; {{ trip.travel_style }}</span>
+                <span class="px-2 py-0.5 rounded-full {% if trip.status == 'confirmed' %}bg-emerald-100 text-emerald-800{% else %}bg-amber-100 text-amber-800{% endif %}">
+                    {{ trip.get_status_display }}
+                </span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">{{ trip.title }}</h1>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">
+                From {{ trip.starting_location }} to {{ trip.destination.name }} &bull; {{ trip.start_date|date:"M d, Y" }} to {{ trip.end_date|date:"M d, Y" }}
+            </p>
+        </div>
+
+        <!-- Budget & Map Links -->
+        <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+            <div class="p-3 bg-slate-50 rounded-2xl border border-gray-100 text-center flex-1 lg:flex-initial">
+                <span class="text-[10px] uppercase font-bold text-gray-400 block">Est. Cost / Budget</span>
+                <span class="text-base font-extrabold text-teal-800">₹{{ trip.estimated_cost }} / ₹{{ trip.total_budget }}</span>
+            </div>
+            <a href="{% url 'trip_map' trip_id=trip.id %}" class="px-5 py-3 bg-teal-50 hover:bg-teal-100 text-teal-700 font-bold text-xs sm:text-sm rounded-2xl transition flex items-center shadow-sm">
+                <i class="fa-solid fa-map-location-dot mr-2 text-teal-600"></i> Interactive Map
+            </a>
+            <a href="{% url 'trip_package_book' trip_id=trip.id %}" class="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs sm:text-sm rounded-2xl transition shadow-md shadow-teal-600/20 flex items-center">
+                <i class="fa-solid fa-suitcase-rolling mr-2"></i> Book Entire Trip
+            </a>
+        </div>
+    </div>
+
+    <!-- SIDE-BY-SIDE WEATHER ADJUSTMENT PROPOSALS (FEATURE 8) -->
+    {% for prop in proposals %}
+    <div class="bg-gradient-to-r from-amber-500/10 via-amber-50 to-orange-50 rounded-3xl p-6 sm:p-8 border-2 border-amber-300 shadow-lg mb-10">
+        <div class="flex items-center space-x-3 text-amber-800 mb-3">
+            <div class="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-xl shadow-md">
+                <i class="fa-solid fa-cloud-bolt"></i>
+            </div>
+            <div>
+                <h2 class="text-xl font-extrabold text-amber-950">Automatic Weather-Based Itinerary Revision Suggested</h2>
+                <p class="text-xs text-amber-800">{{ prop.condition_summary }} &bull; {{ prop.affected_day.date|date:"l, M d, Y" }}</p>
+            </div>
+        </div>
+
+        <p class="text-sm text-amber-900 bg-white/70 backdrop-blur-md p-4 rounded-2xl border border-amber-200 mb-6 leading-relaxed">
+            <i class="fa-solid fa-circle-exclamation text-amber-600 mr-2"></i>
+            <strong>Reason for Revision:</strong> {{ prop.reason }}
+        </p>
+
+        <!-- Side-by-Side Comparison Container -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            
+            <!-- Original Outdoor Plan -->
+            <div class="bg-white rounded-2xl p-5 border border-rose-200 shadow-sm relative overflow-hidden">
+                <span class="text-[10px] uppercase font-extrabold px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 mb-2 inline-block">
+                    <i class="fa-solid fa-sun mr-1"></i> Original Planned Activity
+                </span>
+                <h4 class="text-lg font-bold text-slate-900 mt-1">{{ prop.original_item_title }}</h4>
+                <p class="text-xs text-slate-500 mt-1">Outdoor attraction susceptible to rainfall and wet conditions.</p>
+                <div class="mt-4 pt-3 border-t border-gray-100 flex justify-between text-xs font-semibold">
+                    <span class="text-gray-500">Scheduled Cost:</span>
+                    <span class="text-slate-800">₹{{ prop.original_cost }}</span>
+                </div>
+            </div>
+
+            <!-- Proposed Indoor Alternative -->
+            <div class="bg-white rounded-2xl p-5 border-2 border-emerald-500 shadow-md relative overflow-hidden">
+                <span class="text-[10px] uppercase font-extrabold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 mb-2 inline-block">
+                    <i class="fa-solid fa-umbrella mr-1"></i> Proposed Indoor Alternative (Recommended)
+                </span>
+                <h4 class="text-lg font-bold text-emerald-950 mt-1">{{ prop.replacement_attraction.name }}</h4>
+                <p class="text-xs text-slate-600 mt-1">{{ prop.replacement_attraction.description }}</p>
+                <div class="mt-4 pt-3 border-t border-gray-100 flex justify-between text-xs font-semibold">
+                    <span class="text-gray-500">Indoor Ticket Cost:</span>
+                    <span class="text-emerald-700 font-bold">₹{{ prop.new_cost }}</span>
+                </div>
+                <div class="mt-1 flex justify-between text-xs">
+                    <span class="text-gray-400">Budget impact:</span>
+                    <span class="font-bold {% if prop.cost_difference <= 0 %}text-emerald-600{% else %}text-amber-600{% endif %}">
+                        {% if prop.cost_difference > 0 %}+₹{{ prop.cost_difference }}{% else %}₹{{ prop.cost_difference }}{% endif %}
+                    </span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Decision Action Bar -->
+        <div class="flex flex-col sm:flex-row items-center justify-end gap-3 pt-2">
+            <form method="POST" action="{% url 'weather_adjustment_action' proposal_id=prop.id %}" class="w-full sm:w-auto">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="reject">
+                <button type="submit" class="w-full sm:w-auto px-5 py-2.5 bg-white hover:bg-gray-100 text-gray-700 font-bold text-xs rounded-xl border border-gray-300 transition">
+                    Keep Original Outdoor Plan
+                </button>
+            </form>
+
+            <form method="POST" action="{% url 'weather_adjustment_action' proposal_id=prop.id %}" class="w-full sm:w-auto">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="accept">
+                <button type="submit" class="w-full sm:w-auto px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-md shadow-emerald-600/30 transition flex items-center justify-center space-x-1.5">
+                    <i class="fa-solid fa-check"></i>
+                    <span>Accept & Apply Indoor Revision</span>
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Day-by-Day Timeline -->
+    <div class="space-y-10">
+        {% for day in days %}
+        <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm">
+            
+            <!-- Day Header & Weather Forecast -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-6 border-b border-gray-100 gap-4">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-teal-600 text-white rounded-2xl flex flex-col items-center justify-center font-bold">
+                        <span class="text-[10px] uppercase tracking-wider">Day</span>
+                        <span class="text-base leading-none">{{ day.day_number }}</span>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-900">{{ day.date|date:"l, F d, Y" }}</h3>
+                        <p class="text-xs text-slate-500">{{ day.summary }}</p>
+                    </div>
+                </div>
+
+                <!-- Daily Weather Pill -->
+                <div class="flex items-center space-x-3 px-4 py-2 rounded-2xl bg-slate-50 border border-gray-200/80 text-xs self-start sm:self-auto">
+                    <div class="text-right">
+                        <span class="font-extrabold text-slate-800 block text-sm">{{ day.forecast_temp }}</span>
+                        <span class="text-[11px] text-gray-500">{{ day.weather_condition }}</span>
+                    </div>
+                    <div class="pl-2 border-l border-gray-200">
+                        <span class="text-[10px] block font-bold {% if day.rain_probability >= 60 %}text-rose-600{% else %}text-teal-600{% endif %}">
+                            <i class="fa-solid fa-cloud-rain mr-0.5"></i> {{ day.rain_probability }}% Rain
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activities for this Day -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {% for item in day.items.all %}
+                <div class="bg-slate-50/70 rounded-2xl p-5 border {% if item.weather_status == 'weather_alert' %}border-amber-300 bg-amber-50/40{% elif item.weather_status == 'replaced' %}border-emerald-300 bg-emerald-50/40{% else %}border-gray-100{% endif %} flex flex-col justify-between">
+                    <div>
+                        <!-- Slot badge -->
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[10px] uppercase font-bold text-teal-700 tracking-wider">
+                                {% if item.time_slot == 'morning' %}
+                                    <i class="fa-solid fa-sun mr-1 text-amber-500"></i> Morning
+                                {% elif item.time_slot == 'afternoon' %}
+                                    <i class="fa-solid fa-cloud-sun mr-1 text-amber-500"></i> Afternoon
+                                {% else %}
+                                    <i class="fa-solid fa-moon mr-1 text-indigo-500"></i> Evening
+                                {% endif %}
+                            </span>
+
+                            {% if item.weather_status == 'weather_alert' %}
+                                <span class="text-[9px] font-bold bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full">Rain Risk</span>
+                            {% elif item.weather_status == 'replaced' %}
+                                <span class="text-[9px] font-bold bg-emerald-200 text-emerald-900 px-2 py-0.5 rounded-full">Weather Adjusted</span>
+                            {% endif %}
+                        </div>
+
+                        <h4 class="font-bold text-slate-900 text-base mb-1">{{ item.title }}</h4>
+                        <p class="text-xs text-slate-600 leading-relaxed line-clamp-3 mb-4">{{ item.description }}</p>
+                    </div>
+
+                    <div class="pt-4 border-t border-gray-200/60 flex items-center justify-between text-xs">
+                        <span class="text-slate-500"><i class="fa-solid fa-ticket mr-1 text-teal-600"></i> ₹{{ item.estimated_cost }}</span>
+                        <span class="text-[11px] font-semibold {% if item.is_outdoor %}text-amber-700{% else %}text-emerald-700{% endif %}">
+                            {% if item.is_outdoor %}Outdoor Sight{% else %}Indoor / Sheltered{% endif %}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Recommendations for Stays & Transit Section -->
+    <div class="mt-12 bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
+        <h3 class="text-xl font-bold text-slate-900 mb-4">Recommended Accommodations & Local Transit</h3>
+        <p class="text-xs text-slate-500 mb-6">Coordinate your stays and transport pickup points directly for this trip.</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for h in hotels %}
+            <div class="flex items-center space-x-4 p-4 rounded-2xl bg-slate-50 border border-gray-100">
+                <img src="{{ h.cover_image }}" class="w-20 h-20 rounded-xl object-cover" alt="{{ h.name }}">
+                <div class="flex-1">
+                    <h4 class="font-bold text-sm text-slate-900">{{ h.name }}</h4>
+                    <p class="text-xs text-slate-500">{{ h.address }}</p>
+                    <div class="mt-2 flex items-center justify-between">
+                        <span class="font-extrabold text-teal-700 text-sm">₹{{ h.base_price }}/night</span>
+                        <a href="{% url 'hotel_detail' hotel_id=h.id %}" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold transition">Book Hotel</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

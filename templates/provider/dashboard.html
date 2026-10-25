@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% block title %}Service Provider Portal — AI Smart Tourism{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    
+    <!-- Provider Header -->
+    <div class="bg-gradient-to-r from-purple-800 to-indigo-900 rounded-3xl p-8 text-white mb-10 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div>
+            <div class="flex items-center space-x-2 text-xs font-bold text-purple-200 uppercase tracking-wider mb-1">
+                <span>Vendor & Fleet Operations Hub</span>
+            </div>
+            <h1 class="text-3xl font-extrabold">{{ profile.business_name|default:provider.username }}</h1>
+            <p class="text-xs text-purple-200 mt-1">
+                Status: 
+                {% if profile.is_approved %}
+                    <span class="font-bold text-emerald-300"><i class="fa-solid fa-circle-check"></i> Approved & Active</span>
+                {% else %}
+                    <span class="font-bold text-amber-300"><i class="fa-solid fa-clock"></i> Pending Administrator Approval</span>
+                {% endif %}
+                &bull; License: {{ profile.license_number|default:"Not specified" }}
+            </p>
+        </div>
+
+        <div class="flex items-center space-x-3 text-xs">
+            <div class="bg-white/10 px-4 py-2.5 rounded-2xl backdrop-blur-md">
+                <span class="text-purple-200 block text-[10px] uppercase font-bold">Total Orders</span>
+                <span class="text-lg font-extrabold text-white">{{ total_bookings_count }}</span>
+            </div>
+            <div class="bg-white/10 px-4 py-2.5 rounded-2xl backdrop-blur-md">
+                <span class="text-purple-200 block text-[10px] uppercase font-bold">Confirmed</span>
+                <span class="text-lg font-extrabold text-emerald-300">{{ confirmed_count }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Incoming Booking Requests -->
+    <div class="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm mb-10">
+        <h2 class="text-xl font-bold text-slate-900 mb-6">Recent Booking Requests for Your Inventory</h2>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead>
+                    <tr class="border-b border-gray-100 text-gray-400 uppercase tracking-wider">
+                        <th class="pb-3">Ref Code</th>
+                        <th class="pb-3">Traveler</th>
+                        <th class="pb-3">Service</th>
+                        <th class="pb-3">Travel Date</th>
+                        <th class="pb-3">Qty</th>
+                        <th class="pb-3">Amount</th>
+                        <th class="pb-3">Status</th>
+                        <th class="pb-3 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 text-slate-700">
+                    {% for b in recent_bookings %}
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="py-4 font-mono font-bold text-teal-700">{{ b.booking_reference }}</td>
+                        <td class="py-4 font-semibold text-slate-900">{{ b.user.get_full_name|default:b.user.username }}</td>
+                        <td class="py-4">
+                            {% if b.hotel %}{{ b.hotel.name }}{% elif b.transport_service %}{{ b.transport_service.name }}{% elif b.activity %}{{ b.activity.title }}{% endif %}
+                        </td>
+                        <td class="py-4">{{ b.start_date|date:"M d, Y" }}</td>
+                        <td class="py-4">{{ b.quantity }}</td>
+                        <td class="py-4 font-bold text-slate-900">₹{{ b.total_amount }}</td>
+                        <td class="py-4">
+                            <span class="text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-full {% if b.status == 'confirmed' %}bg-emerald-100 text-emerald-800{% elif b.status == 'pending' %}bg-amber-100 text-amber-800{% else %}bg-rose-100 text-rose-800{% endif %}">
+                                {{ b.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="py-4 text-right">
+                            {% if b.status == 'pending' %}
+                            <div class="inline-flex space-x-1">
+                                <form method="POST" action="{% url 'provider_booking_action' booking_id=b.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="confirm">
+                                    <button type="submit" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-[11px] shadow-sm">
+                                        Accept
+                                    </button>
+                                </form>
+                                <form method="POST" action="{% url 'provider_booking_action' booking_id=b.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="reject">
+                                    <button type="submit" class="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-lg text-[11px] shadow-sm">
+                                        Reject
+                                    </button>
+                                </form>
+                            </div>
+                            {% else %}
+                            <span class="text-gray-400 text-[11px] italic">Processed</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-8 text-gray-400">No booking requests received yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Active Published Inventory -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Hotels -->
+        <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+            <h3 class="font-bold text-sm text-slate-900 mb-3"><i class="fa-solid fa-hotel text-teal-600 mr-1.5"></i> My Hotels ({{ my_hotels.count }})</h3>
+            <div class="space-y-3">
+                {% for h in my_hotels %}
+                <div class="p-3 bg-slate-50 rounded-xl text-xs flex justify-between items-center">
+                    <div>
+                        <h5 class="font-bold text-slate-800">{{ h.name }}</h5>
+                        <p class="text-[10px] text-gray-500">{{ h.destination.name }} &bull; ₹{{ h.base_price }}/night</p>
+                    </div>
+                    <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">Active</span>
+                </div>
+                {% empty %}
+                <p class="text-xs text-gray-400">No hotels currently published.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Transport -->
+        <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+            <h3 class="font-bold text-sm text-slate-900 mb-3"><i class="fa-solid fa-van-shuttle text-blue-600 mr-1.5"></i> My Transport ({{ my_transports.count }})</h3>
+            <div class="space-y-3">
+                {% for t in my_transports %}
+                <div class="p-3 bg-slate-50 rounded-xl text-xs flex justify-between items-center">
+                    <div>
+                        <h5 class="font-bold text-slate-800">{{ t.name }}</h5>
+                        <p class="text-[10px] text-gray-500">{{ t.source_city }} &rarr; {{ t.destination_city }}</p>
+                    </div>
+                    <span class="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">{{ t.available_capacity }} seats</span>
+                </div>
+                {% empty %}
+                <p class="text-xs text-gray-400">No fleet schedules published.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Activities -->
+        <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+            <h3 class="font-bold text-sm text-slate-900 mb-3"><i class="fa-solid fa-ticket text-amber-600 mr-1.5"></i> My Tours & Activities ({{ my_activities.count }})</h3>
+            <div class="space-y-3">
+                {% for a in my_activities %}
+                <div class="p-3 bg-slate-50 rounded-xl text-xs flex justify-between items-center">
+                    <div>
+                        <h5 class="font-bold text-slate-800">{{ a.title }}</h5>
+                        <p class="text-[10px] text-gray-500">₹{{ a.price_per_person }}/ticket</p>
+                    </div>
+                    <span class="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded">{{ a.available_slots }} slots</span>
+                </div>
+                {% empty %}
+                <p class="text-xs text-gray-400">No activities published.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

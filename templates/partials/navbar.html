@@ -1,0 +1,142 @@
+<nav class="sticky top-0 z-50 glass border-b border-gray-200/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-20 items-center">
+            
+            <!-- Brand Logo -->
+            <a href="{% url 'home' %}" class="flex items-center space-x-3 group">
+                <div class="w-11 h-11 bg-gradient-to-tr from-teal-600 to-emerald-500 rounded-xl flex items-center justify-center text-white shadow-md shadow-teal-500/20 group-hover:scale-105 transition">
+                    <i class="fa-solid fa-compass text-2xl"></i>
+                </div>
+                <div>
+                    <span class="text-xl font-bold bg-gradient-to-r from-teal-800 to-emerald-700 bg-clip-text text-transparent">AI Smart Tourism</span>
+                    <span class="block text-[10px] tracking-wider uppercase font-semibold text-gray-500">AI-Powered Travel</span>
+                </div>
+            </a>
+
+            <!-- Desktop Nav Links -->
+            <div class="hidden lg:flex items-center space-x-1">
+                <a href="{% url 'home' %}" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-teal-600 rounded-lg transition">Home</a>
+                <a href="{% url 'destination_list' %}" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-teal-600 rounded-lg transition">Explore Destinations</a>
+                <a href="{% url 'plan_trip' %}" class="px-3 py-2 text-sm font-medium text-teal-700 bg-teal-50 hover:bg-teal-100 rounded-lg transition flex items-center">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-1.5 text-teal-600"></i> Plan a Trip
+                </a>
+                <a href="{% url 'weather_dashboard' %}" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-teal-600 rounded-lg transition">
+                    <i class="fa-solid fa-cloud-sun mr-1 text-amber-500"></i> Weather
+                </a>
+                
+                <!-- Services dropdown -->
+                <div class="relative group">
+                    <button class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-teal-600 rounded-lg transition flex items-center">
+                        Bookings <i class="fa-solid fa-chevron-down text-xs ml-1.5 text-gray-400 group-hover:rotate-180 transition"></i>
+                    </button>
+                    <div class="absolute left-0 mt-1 w-48 bg-white border border-gray-100 rounded-xl shadow-xl py-2 hidden group-hover:block transition">
+                        <a href="{% url 'hotel_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-teal-50 hover:text-teal-700"><i class="fa-solid fa-hotel mr-2 text-teal-500"></i> Hotels & Stays</a>
+                        <a href="{% url 'transport_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-teal-50 hover:text-teal-700"><i class="fa-solid fa-van-shuttle mr-2 text-blue-500"></i> Transport & Cabs</a>
+                        <a href="{% url 'activity_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-teal-50 hover:text-teal-700"><i class="fa-solid fa-ticket mr-2 text-amber-500"></i> Activities & Tours</a>
+                    </div>
+                </div>
+
+                {% if user.is_authenticated %}
+                    <a href="{% url 'my_trips' %}" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-teal-600 rounded-lg transition">My Trips</a>
+                    <a href="{% url 'my_bookings' %}" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-teal-600 rounded-lg transition">My Bookings</a>
+                    
+                    <!-- Role-based dashboards -->
+                    {% if user.role == 'provider' %}
+                        <a href="{% url 'provider_dashboard' %}" class="px-3 py-1.5 text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-lg transition border border-purple-200">
+                            <i class="fa-solid fa-store mr-1"></i> Provider Hub
+                        </a>
+                    {% endif %}
+                    {% if user.is_platform_admin %}
+                        <a href="{% url 'portal_admin_dashboard' %}" class="px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition border border-indigo-200">
+                            <i class="fa-solid fa-shield-halved mr-1"></i> Admin HQ
+                        </a>
+                    {% endif %}
+                {% endif %}
+            </div>
+
+            <!-- Right Actions (Notifications, Auth) -->
+            <div class="hidden lg:flex items-center space-x-3">
+                {% if user.is_authenticated %}
+                    <!-- Notifications Bell -->
+                    <a href="{% url 'notification_list' %}" class="relative p-2.5 text-gray-600 hover:text-teal-600 hover:bg-gray-100 rounded-full transition">
+                        <i class="fa-regular fa-bell text-lg"></i>
+                        {% if unread_notifications_count > 0 %}
+                            <span class="absolute top-1 right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-rose-500 rounded-full">
+                                {{ unread_notifications_count }}
+                            </span>
+                        {% endif %}
+                    </a>
+
+                    <!-- User Profile Dropdown -->
+                    <div class="relative group">
+                        <button class="flex items-center space-x-2.5 p-1.5 rounded-full hover:bg-gray-100 transition">
+                            <img src="{{ user.profile_image|default:'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80' }}" class="w-9 h-9 rounded-full object-cover border-2 border-teal-500" alt="Avatar">
+                            <span class="text-sm font-medium text-gray-700">{{ user.first_name|default:user.username }}</span>
+                            <i class="fa-solid fa-angle-down text-xs text-gray-400"></i>
+                        </button>
+                        <div class="absolute right-0 mt-1 w-52 bg-white border border-gray-100 rounded-2xl shadow-xl py-2 hidden group-hover:block transition">
+                            <div class="px-4 py-2 border-b border-gray-100">
+                                <p class="text-xs text-gray-500">Signed in as</p>
+                                <p class="text-sm font-bold text-gray-900 truncate">{{ user.email }}</p>
+                                <span class="inline-block mt-1 text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full {% if user.role == 'provider' %}bg-purple-100 text-purple-700{% elif user.is_platform_admin %}bg-indigo-100 text-indigo-700{% else %}bg-teal-100 text-teal-700{% endif %}">
+                                    {{ user.get_role_display }}
+                                </span>
+                            </div>
+                            <a href="{% url 'profile' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-teal-50"><i class="fa-regular fa-user mr-2 text-gray-400"></i> Profile</a>
+                            <a href="{% url 'my_trips' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-teal-50"><i class="fa-solid fa-map-location-dot mr-2 text-gray-400"></i> My Trips</a>
+                            <a href="{% url 'my_bookings' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-teal-50"><i class="fa-solid fa-receipt mr-2 text-gray-400"></i> My Bookings</a>
+                            <div class="border-t border-gray-100 my-1"></div>
+                            <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-rose-600 hover:bg-rose-50"><i class="fa-solid fa-arrow-right-from-bracket mr-2"></i> Log Out</a>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="{% url 'login' %}" class="px-4 py-2 text-sm font-semibold text-gray-700 hover:text-teal-600 transition">Log In</a>
+                    <a href="{% url 'register' %}" class="px-5 py-2.5 text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 rounded-xl shadow-md shadow-teal-600/20 transition">Register</a>
+                {% endif %}
+            </div>
+
+            <!-- Mobile Hamburger -->
+            <div class="lg:hidden flex items-center space-x-2">
+                {% if user.is_authenticated and unread_notifications_count > 0 %}
+                    <a href="{% url 'notification_list' %}" class="relative p-2 text-gray-600">
+                        <i class="fa-regular fa-bell text-lg"></i>
+                        <span class="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full"></span>
+                    </a>
+                {% endif %}
+                <button id="mobileMenuBtn" class="p-2 text-gray-700 hover:text-teal-600 focus:outline-none">
+                    <i class="fa-solid fa-bars text-2xl"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Dropdown Menu -->
+    <div id="mobileMenu" class="hidden lg:hidden border-t border-gray-200 bg-white px-4 pt-3 pb-6 space-y-2">
+        <a href="{% url 'home' %}" class="block px-3 py-2 text-base font-medium text-gray-800 rounded-lg hover:bg-teal-50">Home</a>
+        <a href="{% url 'destination_list' %}" class="block px-3 py-2 text-base font-medium text-gray-800 rounded-lg hover:bg-teal-50">Explore Destinations</a>
+        <a href="{% url 'plan_trip' %}" class="block px-3 py-2 text-base font-medium text-teal-700 bg-teal-50 rounded-lg">Plan a Trip</a>
+        <a href="{% url 'weather_dashboard' %}" class="block px-3 py-2 text-base font-medium text-gray-800 rounded-lg hover:bg-teal-50">Weather Dashboard</a>
+        <a href="{% url 'hotel_list' %}" class="block px-3 py-2 text-base font-medium text-gray-800 rounded-lg hover:bg-teal-50">Hotels & Stays</a>
+        <a href="{% url 'transport_list' %}" class="block px-3 py-2 text-base font-medium text-gray-800 rounded-lg hover:bg-teal-50">Transport & Cabs</a>
+        <a href="{% url 'activity_list' %}" class="block px-3 py-2 text-base font-medium text-gray-800 rounded-lg hover:bg-teal-50">Activities & Tours</a>
+        {% if user.is_authenticated %}
+            <div class="border-t border-gray-100 pt-2">
+                <a href="{% url 'my_trips' %}" class="block px-3 py-2 text-base font-medium text-gray-800 hover:bg-teal-50">My Trips</a>
+                <a href="{% url 'my_bookings' %}" class="block px-3 py-2 text-base font-medium text-gray-800 hover:bg-teal-50">My Bookings</a>
+                <a href="{% url 'profile' %}" class="block px-3 py-2 text-base font-medium text-gray-800 hover:bg-teal-50">Profile Settings</a>
+                {% if user.role == 'provider' %}
+                    <a href="{% url 'provider_dashboard' %}" class="block px-3 py-2 text-base font-medium text-purple-700 bg-purple-50 rounded-lg">Provider Dashboard</a>
+                {% endif %}
+                {% if user.is_platform_admin %}
+                    <a href="{% url 'portal_admin_dashboard' %}" class="block px-3 py-2 text-base font-medium text-indigo-700 bg-indigo-50 rounded-lg">Admin Dashboard</a>
+                {% endif %}
+                <a href="{% url 'logout' %}" class="block px-3 py-2 text-base font-medium text-rose-600 hover:bg-rose-50">Log Out</a>
+            </div>
+        {% else %}
+            <div class="border-t border-gray-100 pt-3 flex flex-col space-y-2">
+                <a href="{% url 'login' %}" class="w-full text-center py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-xl">Log In</a>
+                <a href="{% url 'register' %}" class="w-full text-center py-2.5 text-sm font-semibold text-white bg-teal-600 rounded-xl">Register</a>
+            </div>
+        {% endif %}
+    </div>
+</nav>

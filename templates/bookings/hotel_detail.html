@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% block title %}{{ hotel.name }} — Select Room & Reserve{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    
+    <!-- Top Hotel Card -->
+    <div class="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm mb-10">
+        <div class="grid grid-cols-1 md:grid-cols-2">
+            <div class="h-80 md:h-full">
+                <img src="{{ hotel.cover_image }}" alt="{{ hotel.name }}" class="w-full h-full object-cover">
+            </div>
+            
+            <div class="p-8 sm:p-10 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center space-x-2 mb-2">
+                        <span class="text-xs font-bold uppercase text-teal-700 bg-teal-50 px-2.5 py-0.5 rounded-full">{{ hotel.destination.name }}</span>
+                        <span class="text-xs font-bold text-amber-500">★ {{ hotel.star_rating }} Star Verified</span>
+                    </div>
+
+                    <h1 class="text-3xl font-extrabold text-slate-900 mb-2">{{ hotel.name }}</h1>
+                    <p class="text-xs text-slate-500 mb-6"><i class="fa-solid fa-map-pin mr-1 text-teal-600"></i> {{ hotel.address }}</p>
+
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Amenities</h4>
+                    <div class="flex flex-wrap gap-2 mb-6">
+                        {% for a in amenities_list %}
+                            <span class="text-xs bg-slate-50 text-slate-700 border border-gray-200 px-3 py-1 rounded-xl flex items-center">
+                                <i class="fa-solid fa-check text-teal-500 mr-1.5 text-[10px]"></i> {{ a }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="p-4 bg-teal-50/60 rounded-2xl border border-teal-100 text-xs text-teal-900">
+                    <i class="fa-solid fa-shield-halved text-teal-600 mr-1.5"></i>
+                    <strong>Cancellation Policy:</strong> {{ hotel.cancellation_policy }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Available Room Types & Reservation Form -->
+    <div class="bg-white rounded-3xl p-8 sm:p-10 border border-gray-100 shadow-sm">
+        <h2 class="text-2xl font-bold text-slate-900 mb-6">Available Room Categories</h2>
+
+        <form method="POST" action="{% url 'hotel_book' hotel_id=hotel.id %}" class="space-y-8">
+            {% csrf_token %}
+
+            <!-- Room Category Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {% for room in rooms %}
+                <label class="relative rounded-2xl border-2 border-gray-200 p-5 cursor-pointer hover:border-teal-500 transition block has-[:checked]:border-teal-600 has-[:checked]:bg-teal-50/40">
+                    <input type="radio" name="room_type" value="{{ room.id }}" required class="absolute top-4 right-4 text-teal-600 focus:ring-teal-500" {% if forloop.first %}checked{% endif %}>
+                    
+                    <h4 class="text-base font-extrabold text-slate-900 pr-6">{{ room.name }}</h4>
+                    <p class="text-xs text-slate-500 mt-1 mb-4">{{ room.description|default:"Spacious room with modern amenities, ensuite bathroom & scenic view." }}</p>
+
+                    <div class="text-xs text-slate-600 space-y-1 mb-4">
+                        <div><i class="fa-regular fa-user mr-1 text-teal-600"></i> Max Guests: {{ room.capacity_guests }}</div>
+                        <div><i class="fa-solid fa-door-open mr-1 text-teal-600"></i> Available: <span class="font-bold text-emerald-700">{{ room.available_rooms }} rooms</span></div>
+                    </div>
+
+                    <div class="pt-3 border-t border-gray-100 flex items-baseline justify-between">
+                        <span class="text-xs text-gray-400">Price/night</span>
+                        <span class="text-xl font-extrabold text-teal-700">₹{{ room.price_per_night }}</span>
+                    </div>
+                </label>
+                {% empty %}
+                <div class="col-span-3 text-center py-8 text-gray-400">
+                    No active rooms currently available for this hotel.
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Booking Dates and Details -->
+            <div class="pt-6 border-t border-gray-100">
+                <h3 class="text-base font-bold text-slate-900 mb-4">Reservation Details</h3>
+
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Check-In *</label>
+                        <input type="date" name="check_in" id="checkIn" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-teal-500 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Check-Out *</label>
+                        <input type="date" name="check_out" id="checkOut" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-teal-500 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Rooms Count</label>
+                        <input type="number" name="rooms_count" value="1" min="1" max="5" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-teal-500 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Guests Count</label>
+                        <input type="number" name="guests_count" value="2" min="1" max="10" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-teal-500 outline-none">
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Special Requests (Optional)</label>
+                    <input type="text" name="special_requests" placeholder="e.g. Quiet room, upper floor, airport pickup requested" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-teal-500 outline-none">
+                </div>
+
+                <div class="mt-8 flex justify-end">
+                    <button type="submit" class="px-8 py-3.5 bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-teal-600/30 transition flex items-center">
+                        <i class="fa-solid fa-lock mr-2"></i> Proceed to Secure Checkout
+                    </button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const inInput = document.getElementById('checkIn');
+        const outInput = document.getElementById('checkOut');
+        
+        const today = new Date();
+        const tomorrow = new Date();
+        tomorrow.setDate(today.getDate() + 1);
+        const nextDay = new Date();
+        nextDay.setDate(today.getDate() + 3);
+
+        if (inInput) {
+            inInput.value = tomorrow.toISOString().split('T')[0];
+            inInput.min = today.toISOString().split('T')[0];
+        }
+        if (outInput) {
+            outInput.value = nextDay.toISOString().split('T')[0];
+            outInput.min = tomorrow.toISOString().split('T')[0];
+        }
+    });
+</script>
+{% endblock %}

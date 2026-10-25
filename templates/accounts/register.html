@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% block title %}Register {{ account_type }} — AI Smart Tourism{% endblock %}
+
+{% block content %}
+<div class="min-h-[85vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-xl w-full bg-white rounded-3xl shadow-xl border border-gray-100 p-8 sm:p-10">
+        
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="w-12 h-12 {% if account_type == 'Service Provider' %}bg-purple-600{% else %}bg-teal-600{% endif %} rounded-2xl flex items-center justify-center text-white mx-auto shadow-md mb-3">
+                <i class="fa-solid {% if account_type == 'Service Provider' %}fa-store{% else %}fa-user-plus{% endif %} text-xl"></i>
+            </div>
+            <h2 class="text-2xl font-extrabold text-slate-900">Create {{ account_type }} Account</h2>
+            <p class="text-xs text-slate-500 mt-1">
+                {% if account_type == 'Service Provider' %}
+                    Join our vendor network to list hotels, cabs, and sightseeing activities
+                {% else %}
+                    Start planning your AI-driven vacations with real-time weather alerts
+                {% endif %}
+            </p>
+        </div>
+
+        <form method="POST" class="space-y-4">
+            {% csrf_token %}
+
+            {% if form.errors %}
+            <div class="p-3 text-xs bg-rose-50 border border-rose-200 text-rose-700 rounded-xl">
+                Please correct the errors indicated below.
+                {{ form.errors }}
+            </div>
+            {% endif %}
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Username *</label>
+                    {{ form.username }}
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Email Address *</label>
+                    {{ form.email }}
+                </div>
+            </div>
+
+            {% if form.first_name and form.last_name %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">First Name</label>
+                    {{ form.first_name }}
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Last Name</label>
+                    {{ form.last_name }}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Phone Number</label>
+                    {{ form.phone }}
+                </div>
+                {% if form.travel_style %}
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Preferred Travel Style</label>
+                    {{ form.travel_style }}
+                </div>
+                {% endif %}
+                {% if form.business_type %}
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Business Domain</label>
+                    {{ form.business_type }}
+                </div>
+                {% endif %}
+            </div>
+
+            {% if form.business_name %}
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Registered Business Name *</label>
+                {{ form.business_name }}
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">License / GST Number</label>
+                    {{ form.license_number }}
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Registered Office Address</label>
+                    {{ form.office_address }}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Password *</label>
+                    {{ form.password }}
+                </div>
+                {% if form.confirm_password %}
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Confirm Password *</label>
+                    {{ form.confirm_password }}
+                </div>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="w-full py-3 {% if account_type == 'Service Provider' %}bg-purple-600 hover:bg-purple-700 shadow-purple-600/30{% else %}bg-teal-600 hover:bg-teal-700 shadow-teal-600/30{% endif %} text-white font-bold text-sm rounded-xl shadow-lg transition mt-4">
+                Complete Registration
+            </button>
+        </form>
+
+        <div class="mt-8 pt-6 border-t border-gray-100 text-center space-y-2">
+            <p class="text-xs text-gray-600">
+                Already registered? 
+                <a href="{% url 'login' %}" class="font-bold text-teal-600 hover:text-teal-700">Sign in here</a>
+            </p>
+            {% if account_type == 'Traveler' %}
+                <p class="text-xs text-gray-500">
+                    Are you a hotelier or tour operator? 
+                    <a href="{% url 'provider_register' %}" class="font-bold text-purple-600 hover:text-purple-700">Register as Service Provider</a>
+                </p>
+            {% else %}
+                <p class="text-xs text-gray-500">
+                    Want to book trips as a traveler? 
+                    <a href="{% url 'register' %}" class="font-bold text-teal-600 hover:text-teal-700">Register as Traveler</a>
+                </p>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

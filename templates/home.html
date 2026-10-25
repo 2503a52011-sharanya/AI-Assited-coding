@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}AI Smart Travel & Tourism — Your AI-Powered Trip{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="relative bg-slate-900 text-white overflow-hidden py-24 md:py-32">
+    <!-- Background Image with Overlay -->
+    <div class="absolute inset-0 z-0">
+        <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=80" alt="Scenic Travel Background" class="w-full h-full object-cover opacity-25">
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent"></div>
+    </div>
+
+    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <!-- Tagline Badge -->
+        <div class="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-300 text-xs sm:text-sm font-semibold mb-6 backdrop-blur-md">
+            <i class="fa-solid fa-sparkles text-teal-400"></i>
+            <span>Next-Gen Tourism Intelligence</span>
+        </div>
+
+        <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white mb-4">
+            Your Journey. Your Interests. <br>
+            <span class="bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">Your AI-Powered Trip.</span>
+        </h1>
+        
+        <p class="max-w-2xl mx-auto text-base sm:text-xl text-slate-300 mb-10 leading-relaxed font-normal">
+            Personalized day-wise itineraries, automated weather-aware trip adjustments, conversational Gemini AI concierge, and unified booking across hotels, transit, and activities.
+        </p>
+
+        <!-- Fast Search / Autocomplete Bar -->
+        <div class="max-w-3xl mx-auto bg-white/95 backdrop-blur-md p-3 sm:p-4 rounded-2xl shadow-2xl border border-white/20 text-slate-800">
+            <form action="{% url 'destination_list' %}" method="GET" class="flex flex-col sm:flex-row items-center gap-3">
+                <div class="relative flex-1 w-full text-left">
+                    <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1 px-1">Where to?</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-gray-400"></i>
+                        <input type="text" name="q" placeholder="Enter city or state (e.g. Goa, Jaipur, Kerala)..." class="dest-search-input w-full pl-10 pr-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-teal-500 outline-none transition" autocomplete="off">
+                        <div class="dest-autocomplete-results hidden absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl z-30 max-h-56 overflow-y-auto"></div>
+                    </div>
+                </div>
+
+                <div class="w-full sm:w-auto self-end pt-2 sm:pt-0">
+                    <button type="submit" class="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-teal-600/30 transition flex items-center justify-center space-x-2">
+                        <span>Search</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="mt-8 flex flex-wrap items-center justify-center gap-4 text-xs font-semibold text-slate-300">
+            <span class="text-slate-400">Trending Now:</span>
+            {% for dest in popular_destinations|slice:":3" %}
+                <a href="{% url 'destination_detail' slug=dest.slug %}" class="px-3 py-1 bg-white/10 hover:bg-white/20 rounded-full transition">📍 {{ dest.name }}</a>
+            {% endfor %}
+            <a href="{% url 'plan_trip' %}" class="px-3 py-1 bg-teal-500/20 text-teal-300 border border-teal-500/40 hover:bg-teal-500/30 rounded-full transition">✨ Launch AI Planner</a>
+        </div>
+    </div>
+</section>
+
+<!-- Live Weather Highlights Ticker -->
+<section class="bg-teal-900/90 text-white py-6 border-y border-teal-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 rounded-lg bg-teal-800 flex items-center justify-center text-amber-400">
+                    <i class="fa-solid fa-satellite-dish"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-sm">Real-Time Destination Radar</h3>
+                    <p class="text-xs text-teal-200">Current conditions and automated weather-aware trip recalculation</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full md:w-auto">
+                {% for item in weather_highlights %}
+                <div class="bg-teal-800/60 rounded-xl px-4 py-2 border border-teal-700/50 flex items-center justify-between space-x-4">
+                    <div>
+                        <div class="font-bold text-sm">{{ item.destination.name }}</div>
+                        <div class="text-[11px] text-teal-200">{{ item.weather.condition }}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-base font-extrabold text-amber-300">{{ item.weather.temperature }}</div>
+                        <span class="text-[10px] uppercase font-semibold px-1.5 py-0.5 rounded {% if item.is_live %}bg-emerald-500/30 text-emerald-200{% else %}bg-sky-500/30 text-sky-200{% endif %}">
+                            {% if item.is_live %}Live API{% else %}Demo Radar{% endif %}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Popular Destinations Section -->
+<section class="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
+        <div>
+            <span class="text-xs font-bold text-teal-600 uppercase tracking-wider">Top Recommended</span>
+            <h2 class="text-3xl font-extrabold text-slate-900 mt-1">Popular Holiday Destinations</h2>
+            <p class="text-sm text-slate-500 mt-1">Curated spots with rich culture, verified attractions, and local activities.</p>
+        </div>
+        <a href="{% url 'destination_list' %}" class="mt-4 md:mt-0 inline-flex items-center text-sm font-bold text-teal-600 hover:text-teal-700">
+            View All Destinations <i class="fa-solid fa-arrow-right ml-2"></i>
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for dest in popular_destinations %}
+        <div class="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition border border-gray-100 group flex flex-col">
+            <div class="relative h-60 overflow-hidden">
+                <img src="{{ dest.cover_image }}" alt="{{ dest.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                <div class="absolute top-4 left-4">
+                    <span class="bg-white/90 backdrop-blur-md text-slate-800 text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                        <i class="fa-solid fa-location-dot text-teal-600 mr-1"></i> {{ dest.state_country }}
+                    </span>
+                </div>
+                <div class="absolute bottom-4 right-4">
+                    <span class="bg-slate-900/80 backdrop-blur-md text-white text-xs font-semibold px-2.5 py-1 rounded-lg">
+                        Avg ₹{{ dest.average_budget_per_day }}/day
+                    </span>
+                </div>
+            </div>
+
+            <div class="p-6 flex-1 flex flex-col justify-between">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900 group-hover:text-teal-600 transition">{{ dest.name }}</h3>
+                    <p class="text-xs text-teal-700 font-semibold mb-2">{{ dest.tagline }}</p>
+                    <p class="text-sm text-slate-600 line-clamp-2 leading-relaxed">{{ dest.description }}</p>
+                </div>
+
+                <div class="pt-6 mt-4 border-t border-gray-100 flex items-center justify-between">
+                    <div class="text-xs text-slate-500">
+                        <i class="fa-regular fa-calendar-check text-teal-600 mr-1"></i> Best: {{ dest.best_time_to_visit }}
+                    </div>
+                    <a href="{% url 'destination_detail' slug=dest.slug %}" class="inline-flex items-center text-xs font-bold bg-teal-50 text-teal-700 hover:bg-teal-600 hover:text-white px-3.5 py-2 rounded-xl transition">
+                        Explore <i class="fa-solid fa-angle-right ml-1.5"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-3 text-center py-12 text-gray-500">
+            No destinations loaded yet. Seed script will populate them shortly.
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Smart Features Banner -->
+<section class="bg-gradient-to-br from-slate-900 via-teal-950 to-slate-900 text-white py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+            <span class="text-xs font-bold text-teal-400 uppercase tracking-widest">Why Choose Us</span>
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-white mt-2">Intelligent Technology for Frictionless Travel</h2>
+            <p class="text-slate-300 text-sm mt-3">We go beyond traditional booking sites by marrying live satellite weather feeds with generative AI trip engines.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Feature 1 -->
+            <div class="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-md hover:bg-white/10 transition">
+                <div class="w-14 h-14 rounded-2xl bg-teal-500/20 text-teal-400 flex items-center justify-center text-2xl mb-6">
+                    <i class="fa-solid fa-cloud-showers-heavy"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">Weather-Aware Adjustment</h3>
+                <p class="text-slate-300 text-sm leading-relaxed">
+                    Forecast says rain on Day 2? Our system flags outdoor beach or trekking activities and provides side-by-side indoor cultural and museum alternatives with one-click approval.
+                </p>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-md hover:bg-white/10 transition">
+                <div class="w-14 h-14 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-2xl mb-6">
+                    <i class="fa-solid fa-robot"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">Gemini AI Travel Concierge</h3>
+                <p class="text-slate-300 text-sm leading-relaxed">
+                    Ask questions like “Suggest places for children in Jaipur within ₹12,000” or check your verified booking vouchers directly through our context-aware assistant.
+                </p>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-md hover:bg-white/10 transition">
+                <div class="w-14 h-14 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl mb-6">
+                    <i class="fa-solid fa-credit-card"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">Unified In-Platform Bookings</h3>
+                <p class="text-slate-300 text-sm leading-relaxed">
+                    Reserve rooms, seats, and activities in a single checkout. Safe inventory locking with database transactions prevents overbooking, powered by Razorpay test gateway.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action Section -->
+<section class="py-20 bg-slate-50">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-gradient-to-r from-teal-700 to-emerald-700 rounded-3xl p-10 sm:p-16 text-white text-center shadow-2xl relative overflow-hidden">
+            <div class="relative z-10">
+                <h2 class="text-3xl sm:text-4xl font-extrabold mb-4">Ready to Plan Your Next Adventure?</h2>
+                <p class="text-teal-100 max-w-xl mx-auto text-sm sm:text-base mb-8">
+                    Set your dates, specify your budget, select your travel style, and let AI build your hour-by-hour itinerary in seconds.
+                </p>
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <a href="{% url 'plan_trip' %}" class="w-full sm:w-auto px-8 py-3.5 bg-white text-teal-800 font-extrabold text-sm rounded-xl hover:bg-teal-50 shadow-lg transition">
+                        <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Start Planning Free
+                    </a>
+                    <a href="{% url 'destination_list' %}" class="w-full sm:w-auto px-8 py-3.5 bg-teal-800/60 hover:bg-teal-800 text-white font-semibold text-sm rounded-xl border border-teal-500 transition">
+                        Browse Catalog
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

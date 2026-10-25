@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% block title %}My Bookings — AI Smart Tourism{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+        <div>
+            <h1 class="text-3xl font-extrabold text-slate-900">My Travel Bookings</h1>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">Manage reservations, download tickets, check payment vouchers, and review cancellation policies.</p>
+        </div>
+        <div class="flex space-x-2 text-xs">
+            <a href="{% url 'hotel_list' %}" class="px-4 py-2 bg-teal-50 text-teal-700 font-bold rounded-xl hover:bg-teal-100 transition">Book Hotels</a>
+            <a href="{% url 'activity_list' %}" class="px-4 py-2 bg-teal-50 text-teal-700 font-bold rounded-xl hover:bg-teal-100 transition">Book Activities</a>
+        </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="flex items-center space-x-2 border-b border-gray-200 pb-3 mb-8 overflow-x-auto text-xs font-semibold">
+        <a href="{% url 'my_bookings' %}" class="px-4 py-2 rounded-xl transition {% if not current_filter %}bg-teal-600 text-white shadow-md{% else %}text-slate-600 hover:bg-gray-100{% endif %}">
+            All Bookings
+        </a>
+        <a href="?status=confirmed" class="px-4 py-2 rounded-xl transition {% if current_filter == 'confirmed' %}bg-teal-600 text-white shadow-md{% else %}text-slate-600 hover:bg-gray-100{% endif %}">
+            Confirmed
+        </a>
+        <a href="?status=pending" class="px-4 py-2 rounded-xl transition {% if current_filter == 'pending' %}bg-teal-600 text-white shadow-md{% else %}text-slate-600 hover:bg-gray-100{% endif %}">
+            Pending
+        </a>
+        <a href="?status=cancelled" class="px-4 py-2 rounded-xl transition {% if current_filter == 'cancelled' %}bg-teal-600 text-white shadow-md{% else %}text-slate-600 hover:bg-gray-100{% endif %}">
+            Cancelled
+        </a>
+    </div>
+
+    <!-- Bookings Cards -->
+    <div class="space-y-6">
+        {% for b in bookings %}
+        <div class="bg-white rounded-3xl p-6 sm:p-7 border border-gray-100 shadow-sm hover:shadow-md transition flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            
+            <div class="flex items-start space-x-4">
+                <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-xl shrink-0 {% if b.booking_type == 'hotel' %}bg-teal-100 text-teal-700{% elif b.booking_type == 'transport' %}bg-blue-100 text-blue-700{% elif b.booking_type == 'activity' %}bg-amber-100 text-amber-700{% else %}bg-purple-100 text-purple-700{% endif %}">
+                    {% if b.booking_type == 'hotel' %}
+                        <i class="fa-solid fa-hotel"></i>
+                    {% elif b.booking_type == 'transport' %}
+                        <i class="fa-solid fa-van-shuttle"></i>
+                    {% elif b.booking_type == 'activity' %}
+                        <i class="fa-solid fa-ticket"></i>
+                    {% else %}
+                        <i class="fa-solid fa-suitcase-rolling"></i>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <div class="flex items-center space-x-2 mb-1">
+                        <span class="text-xs font-extrabold text-teal-700">{{ b.booking_reference }}</span>
+                        <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full {% if b.status == 'confirmed' %}bg-emerald-100 text-emerald-800{% elif b.status == 'pending' %}bg-amber-100 text-amber-800{% elif b.status == 'cancelled' %}bg-rose-100 text-rose-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ b.get_status_display }}
+                        </span>
+                        {% if b.is_paid %}
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                <i class="fa-solid fa-check mr-0.5"></i> Paid
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <h3 class="text-lg font-bold text-slate-900">
+                        {% if b.hotel %}
+                            {{ b.hotel.name }} ({{ b.room_type.name }})
+                        {% elif b.transport_service %}
+                            {{ b.transport_service.name }} ({{ b.transport_service.source_city }} &rarr; {{ b.transport_service.destination_city }})
+                        {% elif b.activity %}
+                            {{ b.activity.title }}
+                        {% elif b.trip %}
+                            {{ b.trip.title }} Package
+                        {% endif %}
+                    </h3>
+
+                    <p class="text-xs text-slate-500 mt-1">
+                        <i class="fa-regular fa-calendar text-gray-400 mr-1"></i> Date: {{ b.start_date|date:"M d, Y" }}
+                        {% if b.end_date %} to {{ b.end_date|date:"M d, Y" }}{% endif %}
+                        &bull; Qty: {{ b.quantity }}
+                    </p>
+
+                    {% if b.cancellation_reason %}
+                        <p class="text-[11px] text-rose-600 mt-1 italic">Reason: {{ b.cancellation_reason }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Price and Action Buttons -->
+            <div class="flex flex-row md:flex-col items-end justify-between w-full md:w-auto pt-4 md:pt-0 border-t md:border-t-0 border-gray-100 gap-3">
+                <div class="text-left md:text-right">
+                    <span class="text-[10px] text-gray-400 block uppercase">Total Amount</span>
+                    <span class="text-xl font-extrabold text-teal-800">₹{{ b.total_amount }}</span>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    {% if not b.is_paid and b.status != 'cancelled' %}
+                        <a href="{% url 'checkout' booking_id=b.id %}" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-md transition">
+                            Pay Now
+                        </a>
+                    {% endif %}
+
+                    {% if b.status == 'confirmed' %}
+                        <a href="{% url 'booking_voucher' booking_id=b.id %}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition flex items-center">
+                            <i class="fa-solid fa-file-invoice mr-1.5"></i> Voucher
+                        </a>
+                    {% endif %}
+
+                    {% if b.status in 'pending,confirmed' %}
+                        <a href="{% url 'booking_cancel' booking_id=b.id %}" class="px-3 py-2 text-rose-600 hover:bg-rose-50 text-xs font-semibold rounded-xl transition">
+                            Cancel
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+        {% empty %}
+        <div class="text-center py-16 bg-white rounded-3xl border border-dashed border-gray-200">
+            <i class="fa-solid fa-receipt text-gray-300 text-5xl mb-3"></i>
+            <h3 class="text-lg font-bold text-gray-700">No Bookings Found</h3>
+            <p class="text-xs text-gray-400 mt-1">You haven't made any reservations under this tab yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

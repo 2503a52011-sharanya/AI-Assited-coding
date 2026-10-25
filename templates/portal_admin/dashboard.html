@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+{% block title %}Administrator Headquarters — AI Smart Tourism{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    
+    <!-- Admin Header -->
+    <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-8 text-white mb-10 shadow-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div>
+            <div class="flex items-center space-x-2 text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>Platform Governance & Command Headquarters</span>
+            </div>
+            <h1 class="text-3xl font-extrabold text-white">System Administration</h1>
+            <p class="text-xs text-slate-300 mt-1">Logged in as Administrator <strong class="text-white">{{ user.username }}</strong> &bull; Full CRUD Authority</p>
+        </div>
+
+        <div class="flex items-center space-x-3 text-xs">
+            <a href="/admin/" target="_blank" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition flex items-center">
+                <i class="fa-solid fa-database mr-2"></i> Django Model Admin
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Matrix -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
+        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm text-center">
+            <span class="text-[10px] uppercase font-bold text-gray-400 block">Total Users</span>
+            <span class="text-2xl font-extrabold text-slate-900 mt-1 block">{{ total_users }}</span>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm text-center">
+            <span class="text-[10px] uppercase font-bold text-gray-400 block">Travelers</span>
+            <span class="text-2xl font-extrabold text-teal-700 mt-1 block">{{ total_travelers }}</span>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm text-center">
+            <span class="text-[10px] uppercase font-bold text-gray-400 block">Providers</span>
+            <span class="text-2xl font-extrabold text-purple-700 mt-1 block">{{ total_providers }}</span>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm text-center">
+            <span class="text-[10px] uppercase font-bold text-gray-400 block">Destinations</span>
+            <span class="text-2xl font-extrabold text-blue-700 mt-1 block">{{ total_destinations }}</span>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm text-center">
+            <span class="text-[10px] uppercase font-bold text-gray-400 block">Total Bookings</span>
+            <span class="text-2xl font-extrabold text-amber-700 mt-1 block">{{ total_bookings }}</span>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm text-center">
+            <span class="text-[10px] uppercase font-bold text-gray-400 block">Captured Revenue</span>
+            <span class="text-2xl font-extrabold text-emerald-700 mt-1 block">₹{{ total_revenue }}</span>
+        </div>
+    </div>
+
+    <!-- Provider Approval & Management Section -->
+    <div class="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm mb-10">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h2 class="text-xl font-bold text-slate-900">Service Provider Approval Requests</h2>
+                <p class="text-xs text-slate-500">Approve or suspend vendor accounts before they publish inventory</p>
+            </div>
+            <span class="text-xs font-bold px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
+                {{ pending_providers.count }} Pending Review
+            </span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead>
+                    <tr class="border-b border-gray-100 text-gray-400 uppercase tracking-wider">
+                        <th class="pb-3">Business Name</th>
+                        <th class="pb-3">Owner Account</th>
+                        <th class="pb-3">Domain</th>
+                        <th class="pb-3">License / GST</th>
+                        <th class="pb-3">Contact</th>
+                        <th class="pb-3">Approval Status</th>
+                        <th class="pb-3 text-right">Moderation Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 text-slate-700">
+                    {% for p in pending_providers %}
+                    <tr class="hover:bg-amber-50/30 transition">
+                        <td class="py-4 font-bold text-slate-900">{{ p.business_name }}</td>
+                        <td class="py-4">{{ p.user.username }} ({{ p.user.email }})</td>
+                        <td class="py-4 uppercase text-[10px] font-bold">{{ p.get_business_type_display }}</td>
+                        <td class="py-4 font-mono">{{ p.license_number|default:"Pending upload" }}</td>
+                        <td class="py-4">{{ p.contact_phone|default:p.user.phone }}</td>
+                        <td class="py-4">
+                            <span class="text-[10px] font-extrabold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">Pending</span>
+                        </td>
+                        <td class="py-4 text-right">
+                            <form method="POST" action="{% url 'admin_approve_provider' provider_id=p.id %}" class="inline-block">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="approve">
+                                <button type="submit" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] rounded-lg shadow-sm">
+                                    Approve Vendor
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-6 text-gray-400 italic">No pending provider applications at this time.</td>
+                    </tr>
+                    {% endfor %}
+
+                    {% for p in approved_providers %}
+                    <tr class="hover:bg-slate-50 transition opacity-80">
+                        <td class="py-4 font-bold text-slate-900">{{ p.business_name }}</td>
+                        <td class="py-4">{{ p.user.username }}</td>
+                        <td class="py-4 uppercase text-[10px] font-bold">{{ p.get_business_type_display }}</td>
+                        <td class="py-4 font-mono">{{ p.license_number|default:"Verified" }}</td>
+                        <td class="py-4">{{ p.contact_phone|default:p.user.phone }}</td>
+                        <td class="py-4">
+                            <span class="text-[10px] font-extrabold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">Approved Active</span>
+                        </td>
+                        <td class="py-4 text-right">
+                            <form method="POST" action="{% url 'admin_approve_provider' provider_id=p.id %}" class="inline-block">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="suspend">
+                                <button type="submit" class="px-3 py-1.5 bg-gray-200 hover:bg-rose-100 hover:text-rose-700 text-gray-600 font-bold text-[11px] rounded-lg">
+                                    Suspend
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Platform Bookings & Audit Trail Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        <!-- Live Bookings -->
+        <div class="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
+            <h3 class="text-lg font-bold text-slate-900 mb-4">Latest System Bookings</h3>
+            <div class="space-y-3">
+                {% for b in recent_bookings %}
+                <div class="p-3 bg-slate-50 rounded-2xl text-xs flex justify-between items-center">
+                    <div>
+                        <div class="font-bold text-slate-900">{{ b.booking_reference }} &bull; {{ b.user.username }}</div>
+                        <span class="text-[10px] text-gray-500">{{ b.get_booking_type_display }} &bull; {{ b.created_at|date:"M d, H:i" }}</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="font-extrabold text-teal-800 block">₹{{ b.total_amount }}</span>
+                        <span class="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded {% if b.status == 'confirmed' %}bg-emerald-100 text-emerald-800{% else %}bg-amber-100 text-amber-800{% endif %}">
+                            {{ b.status }}
+                        </span>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-xs text-gray-400">No bookings logged yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Security Audit Logs -->
+        <div class="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
+            <h3 class="text-lg font-bold text-slate-900 mb-4">Security & Inventory Audit Trail</h3>
+            <div class="space-y-3 max-h-96 overflow-y-auto pr-1">
+                {% for log in audit_logs %}
+                <div class="p-3 bg-slate-50 rounded-2xl text-xs border border-gray-100">
+                    <div class="flex items-center justify-between text-[10px] font-bold uppercase text-indigo-700 mb-0.5">
+                        <span>{{ log.action }}</span>
+                        <span class="text-gray-400 font-normal">{{ log.timestamp|date:"M d, H:i:s" }}</span>
+                    </div>
+                    <p class="text-slate-700 text-xs">{{ log.details }}</p>
+                    <span class="text-[10px] text-slate-400 block mt-1">User: {{ log.user.username|default:"System" }}</span>
+                </div>
+                {% empty %}
+                <p class="text-xs text-gray-400">No audit events recorded yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

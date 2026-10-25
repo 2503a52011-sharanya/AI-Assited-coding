@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Cancel Booking — {{ booking.booking_reference }}{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="bg-white rounded-3xl p-8 border border-gray-100 shadow-xl text-center">
+        <div class="w-14 h-14 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center text-2xl mx-auto mb-4">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+
+        <h2 class="text-xl font-extrabold text-slate-900">Cancel Booking?</h2>
+        <p class="text-xs text-slate-500 mt-1 mb-6">Booking Ref: <strong class="text-slate-800">{{ booking.booking_reference }}</strong> (₹{{ booking.total_amount }})</p>
+
+        <div class="p-4 bg-slate-50 rounded-2xl text-left text-xs text-slate-600 space-y-2 mb-6">
+            <p><strong>Cancellation Policy:</strong> Free cancellation up to 24 hours prior to travel date.</p>
+            <p>Upon confirmation, your reserved inventory (rooms, seats, tickets) will be automatically returned to the public pool.</p>
+        </div>
+
+        <form method="POST" class="space-y-4">
+            {% csrf_token %}
+            <textarea name="cancellation_reason" rows="2" placeholder="Reason for cancellation (optional)..." class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-xs outline-none focus:border-rose-500"></textarea>
+
+            <div class="flex items-center space-x-3">
+                <a href="{% url 'my_bookings' %}" class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl transition">
+                    Keep Booking
+                </a>
+                <button type="submit" class="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl transition shadow-md shadow-rose-600/20">
+                    Confirm Cancellation
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

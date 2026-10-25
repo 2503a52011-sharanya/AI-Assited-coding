@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block title %}Activities, Guided Tours & Sightseeing — AI Smart Tourism{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    
+    <!-- Title -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+        <div>
+            <span class="text-xs font-bold text-teal-600 uppercase tracking-wider">Unforgettable Experiences</span>
+            <h1 class="text-3xl font-extrabold text-slate-900 mt-1">Book Tours, Experiences & Attraction Passes</h1>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">Skip the queues with official digital slot passes and verified guides.</p>
+        </div>
+
+        <form method="GET" class="flex items-center space-x-3">
+            <select name="destination" onchange="this.form.submit()" class="px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:border-teal-500 font-semibold text-slate-800">
+                <option value="">All Destinations</option>
+                {% for d in destinations %}
+                    <option value="{{ d.id }}" {% if selected_dest|stringformat:"s" == d.id|stringformat:"s" %}selected{% endif %}>{{ d.name }}</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+
+    <!-- Activities Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for act in activities %}
+        <div class="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition flex flex-col group">
+            <div class="relative h-56 overflow-hidden">
+                <img src="{{ act.image_url }}" alt="{{ act.title }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                <div class="absolute top-4 left-4">
+                    <span class="bg-white/95 backdrop-blur-md text-slate-800 text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                        <i class="fa-solid fa-location-dot text-teal-600 mr-1"></i> {{ act.destination.name }}
+                    </span>
+                </div>
+                <div class="absolute bottom-4 right-4">
+                    <span class="bg-teal-900/90 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-xl">
+                        ₹{{ act.price_per_person }}/person
+                    </span>
+                </div>
+            </div>
+
+            <div class="p-6 flex-1 flex flex-col justify-between">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-1 group-hover:text-teal-600 transition">{{ act.title }}</h3>
+                    <p class="text-xs text-slate-500 mb-4 line-clamp-2 leading-relaxed">{{ act.description }}</p>
+
+                    <div class="space-y-1 text-xs text-slate-600 mb-4">
+                        <div><i class="fa-regular fa-clock text-teal-600 mr-1.5"></i> Duration: {{ act.duration_hours }} Hours</div>
+                        <div><i class="fa-solid fa-hourglass-start text-teal-600 mr-1.5"></i> Slot: {{ act.time_slot }}</div>
+                        <div><i class="fa-solid fa-user-check text-emerald-600 mr-1.5"></i> Remaining Slots: <span class="font-bold text-emerald-700">{{ act.available_slots }}</span></div>
+                    </div>
+                </div>
+
+                <form method="POST" action="{% url 'activity_book' activity_id=act.id %}" class="pt-4 border-t border-gray-100 space-y-3">
+                    {% csrf_token %}
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase">Select Date</label>
+                            <input type="date" name="slot_date" required class="w-full px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs outline-none focus:border-teal-500">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase">Tickets</label>
+                            <input type="number" name="tickets_count" min="1" max="{{ act.available_slots }}" value="1" class="w-full px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs outline-none focus:border-teal-500">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center space-x-1">
+                        <i class="fa-solid fa-ticket"></i>
+                        <span>Book Activity Pass</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-3 text-center py-16 bg-white rounded-3xl border border-dashed border-gray-200">
+            <i class="fa-solid fa-ticket text-gray-300 text-5xl mb-3"></i>
+            <h3 class="text-lg font-bold text-gray-700">No activities found</h3>
+            <p class="text-xs text-gray-400 mt-1">Try selecting another destination.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

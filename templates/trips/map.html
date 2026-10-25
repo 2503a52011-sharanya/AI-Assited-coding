@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Route & Attraction Map — {{ trip.title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+    <!-- Header Card -->
+    <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center space-x-2 text-xs font-bold text-teal-600 uppercase tracking-wider mb-1">
+                <span>{{ trip.destination.name }} &bull; Interactive GPS Routing</span>
+            </div>
+            <h1 class="text-2xl font-extrabold text-slate-900">{{ trip.title }} — Places You Will Visit</h1>
+        </div>
+        <a href="{% url 'trip_itinerary' trip_id=trip.id %}" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition flex items-center">
+            <i class="fa-solid fa-arrow-left mr-2"></i> Back to Itinerary
+        </a>
+    </div>
+
+    <!-- Map & Place List Split View -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Interactive Leaflet Map (2 Cols) -->
+        <div class="lg:col-span-2">
+            <div class="sticky top-24">
+                <div id="tripRouteMap" class="w-full h-[580px] rounded-3xl shadow-md border border-gray-200 z-10"></div>
+                <div class="mt-3 flex items-center justify-between text-[11px] text-gray-500 bg-white p-3 rounded-2xl border border-gray-100">
+                    <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-blue-500 mr-1.5 inline-block"></span> Blue Route: Sequential Itinerary Paths</span>
+                    <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-emerald-500 mr-1.5 inline-block"></span> Green Marker: Hotel Node</span>
+                    <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-teal-600 mr-1.5 inline-block"></span> Numbered: Attractions</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sequential Itinerary Stops (1 Col) -->
+        <div class="space-y-4 max-h-[640px] overflow-y-auto pr-2">
+            <h3 class="font-bold text-sm text-slate-900 uppercase tracking-wider">Itinerary Stops & Waypoints</h3>
+
+            {% for pt in points %}
+            <div id="card-{{ forloop.counter0 }}" class="place-card bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:border-teal-500 cursor-pointer transition" data-index="{{ forloop.counter0 }}" data-lat="{{ pt.lat }}" data-lng="{{ pt.lng }}">
+                <div class="flex items-start justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 rounded-full {% if pt.type == 'start' %}bg-sky-500{% elif pt.type == 'hotel' %}bg-emerald-500{% else %}bg-teal-600{% endif %} text-white font-extrabold text-xs flex items-center justify-center shadow-sm">
+                            {{ pt.seq }}
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-900 text-sm leading-tight">{{ pt.name }}</h4>
+                            {% if pt.time_slot %}
+                                <span class="text-[10px] text-teal-700 font-semibold uppercase">Day {{ pt.day }} &bull; {{ pt.time_slot }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if pt.cost %}
+                        <span class="text-xs font-bold text-slate-700">{{ pt.cost }}</span>
+                    {% endif %}
+                </div>
+
+                <p class="text-xs text-slate-500 mt-2.5 leading-relaxed">{{ pt.details }}</p>
+
+                {% if pt.weather_status == 'replaced' %}
+                    <div class="mt-2 text-[10px] bg-emerald-50 text-emerald-800 font-semibold px-2 py-0.5 rounded-md inline-block">
+                        <i class="fa-solid fa-umbrella mr-1"></i> Indoor Weather Replacement
+                    </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const points = {{ points_json|safe }};
+        if (!points || points.length === 0) return;
+
+        // Center on the destination
+        const destLat = points[0].lat;
+        const destLng = points[0].lng;
+
+        const map = L.map('tripRouteMap').setView([destLat, destLng], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        const markers = [];
+        const latLngs = [];
+
+        points.forEach((pt, index) => {
+            const pos = [pt.lat, pt.lng];
+            latLngs.push(pos);
+
+            // Custom numbered circle icon
+            const customIcon = L.divIcon({
+                className: 'custom-map-pin',
+                html: `<div style="background-color: ${pt.type === 'start' ? '#0ea5e9' : (pt.type === 'hotel' ? '#10b981' : '#0d9488')}; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 11px; border: 2px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">${pt.seq}</div>`,
+                iconSize: [28, 28],
+                iconAnchor: [14, 14]
+            });
+
+            const marker = L.marker(pos, { icon: customIcon }).addTo(map);
+            marker.bindPopup(`
+                <div class="p-1">
+                    <span class="text-[10px] font-bold uppercase text-teal-600">Stop #${pt.seq}</span>
+                    <h4 class="font-bold text-sm text-slate-900">${pt.name}</h4>
+                    <p class="text-xs text-gray-600 mt-1">${pt.details}</p>
+                </div>
+            `);
+
+            markers.push(marker);
+
+            // Sync marker click to highlight card
+            marker.on('click', () => {
+                highlightCard(index);
+            });
+        });
+
+        // Draw Polyline Route connecting the places
+        if (latLngs.length > 1) {
+            const routeLine = L.polyline(latLngs, {
+                color: '#0284c7',
+                weight: 4,
+                opacity: 0.75,
+                dashArray: '6, 8',
+                lineJoin: 'round'
+            }).addTo(map);
+            map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
+        }
+
+        // Sync card click to highlight map marker
+        const cards = document.querySelectorAll('.place-card');
+        cards.forEach(card => {
+            card.addEventListener('click', () => {
+                const idx = parseInt(card.getAttribute('data-index'));
+                highlightMarker(idx);
+            });
+        });
+
+        function highlightCard(index) {
+            cards.forEach(c => c.classList.remove('ring-2', 'ring-teal-500', 'bg-teal-50/50'));
+            const target = document.getElementById(`card-${index}`);
+            if (target) {
+                target.classList.add('ring-2', 'ring-teal-500', 'bg-teal-50/50');
+                target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        function highlightMarker(index) {
+            if (markers[index]) {
+                map.panTo(markers[index].getLatLng());
+                markers[index].openPopup();
+                highlightCard(index);
+            }
+        }
+    });
+</script>
+{% endblock %}
