@@ -78,25 +78,22 @@ DB_HOST = os.getenv('DB_HOST', '127.0.0.1')
 DB_PORT = os.getenv('DB_PORT', '3306')
 
 if DB_ENGINE == 'mysql':
-    # Verify MySQL connectivity
-    can_connect_mysql = False
-    try:
-        import pymysql
-        conn = pymysql.connect(
-            host=DB_HOST,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            port=int(DB_PORT),
-            connect_timeout=2
-        )
-        # Ensure database exists
-        with conn.cursor() as cursor:
-            cursor.execute(f"CREATE DATABASE IF NOT EXISTS `{DB_NAME}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;")
-        conn.close()
-        can_connect_mysql = True
-    except Exception as e:
-        print(f"[Database Notice] MySQL on {DB_HOST}:{DB_PORT} could not be connected ({e}). Gracefully using local SQLite database for uninterrupted execution.")
-        can_connect_mysql = False
+    can_connect_mysql = True
+    # In local development only, check if localhost MySQL server is accessible
+    if DEBUG and not os.getenv('VERCEL') and DB_HOST in ('127.0.0.1', 'localhost'):
+        try:
+            import pymysql
+            conn = pymysql.connect(
+                host=DB_HOST,
+                user=DB_USER,
+                password=DB_PASSWORD,
+                port=int(DB_PORT),
+                connect_timeout=1
+            )
+            conn.close()
+            can_connect_mysql = True
+        except Exception:
+            can_connect_mysql = False
 
     if can_connect_mysql:
         DATABASES = {

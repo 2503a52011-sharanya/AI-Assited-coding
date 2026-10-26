@@ -13,7 +13,7 @@ from .models import Trip, ItineraryDay, ItineraryItem, WeatherAdjustmentProposal
 
 @login_required
 def plan_trip(request):
-    destinations = Destination.objects.all()
+    destinations = Destination.objects.all().order_by('name')
 
     if request.method == 'POST':
         dest_id = request.POST.get('destination')

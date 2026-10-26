@@ -8,10 +8,10 @@ from apps.weather.services import get_destination_weather
 from apps.bookings.models import Hotel, Activity, TransportService
 
 def home(request):
-    popular_destinations = Destination.objects.filter(is_popular=True)[:6]
+    popular_destinations = Destination.objects.filter(is_popular=True)[:9]
     all_destinations = Destination.objects.all()
-    featured_hotels = Hotel.objects.filter(is_active=True)[:4]
-    featured_activities = Activity.objects.filter(is_active=True)[:4]
+    featured_hotels = Hotel.objects.filter(is_active=True)[:6]
+    featured_activities = Activity.objects.filter(is_active=True)[:6]
     
     # Weather teaser for 3 destinations
     weather_highlights = []
@@ -110,8 +110,8 @@ def destination_autocomplete(request):
     if not term:
         return JsonResponse([], safe=False)
     matches = Destination.objects.filter(
-        Q(name__icontains=term) | Q(state_country__icontains=term)
-    )[:6]
+        Q(name__icontains=term) | Q(state_country__icontains=term) | Q(tagline__icontains=term)
+    )[:10]
     data = [{'id': d.id, 'label': f"{d.name}, {d.state_country}", 'slug': d.slug} for d in matches]
     return JsonResponse(data, safe=False)
 

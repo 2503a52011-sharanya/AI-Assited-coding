@@ -26,7 +26,7 @@ def hotel_list(request):
     if query:
         hotels = hotels.filter(name__icontains=query)
 
-    destinations = Destination.objects.all()
+    destinations = Destination.objects.all().order_by('name')
     return render(request, 'bookings/hotels.html', {
         'hotels': hotels,
         'destinations': destinations,
@@ -172,16 +172,27 @@ def transport_book(request, transport_id):
 # ----------------- ACTIVITY VIEWS -----------------
 
 def activity_list(request):
+    from django.db.models import Q
     activities = Activity.objects.filter(is_active=True).select_related('destination')
     dest_id = request.GET.get('destination')
+    q = request.GET.get('q', '').strip()
+
     if dest_id and dest_id.isdigit():
         activities = activities.filter(destination_id=int(dest_id))
+    if q:
+        activities = activities.filter(
+            Q(title__icontains=q) | 
+            Q(description__icontains=q) | 
+            Q(destination__name__icontains=q) | 
+            Q(destination__state_country__icontains=q)
+        )
 
-    destinations = Destination.objects.all()
+    destinations = Destination.objects.all().order_by('name').order_by('name')
     return render(request, 'bookings/activities.html', {
         'activities': activities,
         'destinations': destinations,
-        'selected_dest': dest_id
+        'selected_dest': dest_id,
+        'query': q
     })
 
 

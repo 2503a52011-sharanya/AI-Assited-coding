@@ -31,12 +31,12 @@ def generate_ai_travel_response(user, session, user_message):
             user_booking_summary = "\n".join(lines)
 
     # 2. Fetch platform destination catalog overview
-    destinations = Destination.objects.all()[:8]
-    dest_overview = ", ".join([f"{d.name} ({d.state_country}, Avg ₹{d.average_budget_per_day}/day)" for d in destinations])
+    all_destinations = Destination.objects.all()
+    dest_overview = ", ".join([f"{d.name} ({d.state_country}, Avg ₹{d.average_budget_per_day}/day)" for d in all_destinations[:15]])
 
     # 3. Check for specific keywords for direct smart fallback response
-    # Weather queries
-    for d in destinations:
+    # Weather queries for any platform destination
+    for d in all_destinations:
         if d.name.lower() in msg_lower and ('weather' in msg_lower or 'rain' in msg_lower or 'temp' in msg_lower):
             w = get_destination_weather(d.name, float(d.latitude), float(d.longitude))
             curr = w['current']

@@ -28,6 +28,38 @@
         </form>
     </div>
 
+    <!-- Quick Region Filter Pills -->
+    <div class="flex items-center space-x-2 overflow-x-auto pb-4 mb-8 text-xs">
+        <span class="text-gray-400 font-bold uppercase tracking-wider text-[11px] whitespace-nowrap">Filter By:</span>
+        <a href="{% url 'destination_list' %}" class="px-3 py-1.5 rounded-full transition whitespace-nowrap {% if not query %}bg-teal-600 text-white font-bold{% else %}bg-white border border-gray-200 text-gray-700 hover:bg-gray-50{% endif %}">
+            All World & India ({{ destinations|length }})
+        </a>
+        <a href="?q=India" class="px-3 py-1.5 rounded-full transition whitespace-nowrap {% if query == 'India' %}bg-teal-600 text-white font-bold{% else %}bg-white border border-gray-200 text-gray-700 hover:bg-gray-50{% endif %}">
+            🇮🇳 Incredible India
+        </a>
+        <a href="?q=France" class="px-3 py-1.5 rounded-full transition whitespace-nowrap {% if query == 'France' %}bg-teal-600 text-white font-bold{% else %}bg-white border border-gray-200 text-gray-700 hover:bg-gray-50{% endif %}">
+            🇫🇷 France / Paris
+        </a>
+        <a href="?q=Emirates" class="px-3 py-1.5 rounded-full transition whitespace-nowrap {% if query == 'Emirates' %}bg-teal-600 text-white font-bold{% else %}bg-white border border-gray-200 text-gray-700 hover:bg-gray-50{% endif %}">
+            🇦🇪 Dubai / UAE
+        </a>
+        <a href="?q=Japan" class="px-3 py-1.5 rounded-full transition whitespace-nowrap {% if query == 'Japan' %}bg-teal-600 text-white font-bold{% else %}bg-white border border-gray-200 text-gray-700 hover:bg-gray-50{% endif %}">
+            🇯🇵 Japan / Tokyo
+        </a>
+        <a href="?q=Indonesia" class="px-3 py-1.5 rounded-full transition whitespace-nowrap {% if query == 'Indonesia' %}bg-teal-600 text-white font-bold{% else %}bg-white border border-gray-200 text-gray-700 hover:bg-gray-50{% endif %}">
+            🇮🇩 Bali / Indonesia
+        </a>
+        <a href="?q=Italy" class="px-3 py-1.5 rounded-full transition whitespace-nowrap {% if query == 'Italy' %}bg-teal-600 text-white font-bold{% else %}bg-white border border-gray-200 text-gray-700 hover:bg-gray-50{% endif %}">
+            🇮🇹 Rome / Italy
+        </a>
+        <a href="?q=Switzerland" class="px-3 py-1.5 rounded-full transition whitespace-nowrap {% if query == 'Switzerland' %}bg-teal-600 text-white font-bold{% else %}bg-white border border-gray-200 text-gray-700 hover:bg-gray-50{% endif %}">
+            🇨🇭 Swiss Alps
+        </a>
+        <a href="?q=Maldives" class="px-3 py-1.5 rounded-full transition whitespace-nowrap {% if query == 'Maldives' %}bg-teal-600 text-white font-bold{% else %}bg-white border border-gray-200 text-gray-700 hover:bg-gray-50{% endif %}">
+            🇲🇻 Maldives
+        </a>
+    </div>
+
     <!-- Destination Cards Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {% for item in destinations %}
