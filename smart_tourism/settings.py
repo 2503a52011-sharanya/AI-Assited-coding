@@ -70,7 +70,7 @@ WSGI_APPLICATION = 'smart_tourism.wsgi.application'
 # Database Setup
 # Primary: MySQL with PyMySQL driver
 # Safe auto-detection: If MySQL is not running or db not reachable, use SQLite
-DB_ENGINE = os.getenv('DB_ENGINE', 'mysql').lower()
+DB_ENGINE = os.getenv('DB_ENGINE', 'sqlite').lower()
 DB_NAME = os.getenv('DB_NAME', 'ai_smart_tourism')
 DB_USER = os.getenv('DB_USER', 'root')
 DB_PASSWORD = os.getenv('DB_PASSWORD', '')
